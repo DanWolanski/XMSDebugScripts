@@ -1,31 +1,30 @@
-#!/bin/bash 
+#!/bin/bash
 
-./xmsinfo.sh
+starttime=`date +"%Y-%m-%d_%H-%M-%S"`
+coredir="xmscores-$starttime"
 
-mkdir xmscores
+mkdir $coredir
 
 #XMS Core processes
-gcore -o ./xmscores/xmserver_core `pidof xmserver`
-gcore -o ./xmscores/appmanager `pidof appmanager`
-gcore -o ./xmscores/broker `pidof broker`
-gcore -o ./xmscores/eventmanager `pidof eventmanager`
-gcore -o ./xmscores/nodecontroller `pidof nodecontroller`
+gcore -o ./$coredir/xmserver_core `pidof xmserver`
+gcore -o ./$coredir/appmanager `pidof appmanager`
+gcore -o ./$coredir/broker `pidof broker`
+gcore -o ./$coredir/eventmanager `pidof eventmanager`
+gcore -o ./$coredir/nodecontroller `pidof nodecontroller`
+
 
 #WebRTC process
-gcore -o ./xmscores/rtcweb `pidof rtcweb`
+gcore -o ./$coredir/rtcweb `pidof rtcweb`
+
 
 #HMP Core process
-gcore -o ./xmscores/ssp_x86Linux_boot `pidof ssp_x86Linux_boot`
-
+gcore -o ./$coredir/ssp_x86Linux_boot `pidof ssp_x86Linux_boot`
 
 #XMS interface processes
-#gcore -o ./xmscores/vxmlinterpreter `pidof vxmlinterpreter`
-#gcore -o ./xmscores/xmsrest `pidof xmsrest`
-gcore -o ./xmscores/msml_main `pidof msmlserver`
-#gcore -o ./xmscores/netann `pidof netann`
+#gcore -o ./$coredir/vxmlinterpreter `pidof vxmlinterpreter`
+#gcore -o ./$coredir/xmsrest `pidof xmsrest`
+gcore -o ./$coredir/msml_main `pidof msmlserver`
+#gcore -o ./$coredir/netann `pidof netann`
 
-tar cvzf ./xmscores/binaries.tgz /usr/dialogic/bin/ssp_x86Linux_boot /usr/bin/xmserver /usr/bin/appmanager /usr/bin/broker /usr/bin/eventmanager /usr/bin/nodecontroller /usr/bin/rtcweb /usr/bin/vxmlinterpreter /usr/bin/xmsrest /usr/bin/msmlserver /usr/bin/netann
-
-
-tar cvzf xmscores.tgz xmscores xmsinfo.tgz
-
+#copy of the binaries
+tar cvzf ./$coredir/binaries.tgz /usr/dialogic/bin/ssp_x86Linux_boot /usr/bin/xmserver /usr/bin/appmanager /usr/bin/broker /usr/bin/eventmanager /usr/bin/nodecontroller /usr/bin/rtcweb /usr/bin/vxmlinterpreter /usr/bin/xmsrest /usr/bin/msmlserver /usr/bin/netann 
