@@ -28,3 +28,7 @@ gcore -o ./$coredir/msml_main `pidof msmlserver`
 
 #copy of the binaries
 tar cvzf ./$coredir/binaries.tgz /usr/dialogic/bin/ssp_x86Linux_boot /usr/bin/xmserver /usr/bin/appmanager /usr/bin/broker /usr/bin/eventmanager /usr/bin/nodecontroller /usr/bin/rtcweb /usr/bin/vxmlinterpreter /usr/bin/xmsrest /usr/bin/msmlserver /usr/bin/netann 
+
+echo "----------------------------------------------------------------"
+echo  Cores available in $coredir 
+echo "----------------------------------------------------------------"
