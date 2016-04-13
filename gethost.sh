@@ -1,0 +1,1 @@
+python -c 'import socket; print(socket.gethostbyname(socket.gethostname()))'
