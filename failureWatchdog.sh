@@ -7,12 +7,26 @@ echo -e "$PORTCOUNT Basic Audio Ports are found from WebUI"
 echo -e "$PORTTHRESH is the 90% usage threshold"
 
 setStartCounts(){
-IPTERRORSTARTCOUNT=$(grep 'DeviceManager::allocIptDevice() device: ipt' /var/log/messages | grep unavailable | wc -l)
-MEDIAERRORSTARTCOUNT=$(grep -o 'failed to create stream' /var/log/messages | wc -l )
-RESTARTSTARTCOUNT=$(grep -o 'xms CLIAGENT: From Component: CLI : @ EVENT-- SYSTEM [ready]' /var/log/messages | wc -l)
-echo -e "IPTErrorStartCount=$IPTERRORSTARTCOUNT, MediaErrorCountStart=$MEDIAERRORSTARTCOUNT, XMSRestartCount=$RESTARTSTARTCOUNT"
+    IPTERRORSTARTCOUNT=$(grep 'DeviceManager::allocIptDevice() device: ipt' /var/log/messages | grep unavailable | wc -l)
+    if [ -z "$IPTERRORSTARTCOUNT" ]
+     then
+     IPTERRORSTARTCOUNT=0
+    fi
+    MEDIAERRORSTARTCOUNT=$(grep  'failed to create stream' /var/log/messages | wc -l )
+    if [ -z "$MEDIAERRORSTARTCOUNT" ]
+     then
+     MEDIAERRORSTARTCOUNT=0
+    fi
+    RESTARTSTARTCOUNT=$(grep  'From Component: CLI : @ EVENT-- SYSTEM' /var/log/messages|grep ready | wc -l )
+    if [ -z "$RESTARTSTARTCOUNT" ]
+     then
+     RESTARTSTARTCOUNT=0
+    fi
+
+    echo -e "IPTErrorStartCount=$IPTERRORSTARTCOUNT, MediaErrorCountStart=$MEDIAERRORSTARTCOUNT, XMSRestartCount=$RESTARTSTARTCOUNT"
 
 }
+
 onFailure(){
        
 	FAILURETIME=`date +"%y-%m-%d:%H-%m-%s"`
@@ -37,11 +51,14 @@ onFailure(){
 
 }
 
+
 setStartCounts
+
 KEEPLOOPING=true
 while $KEEPLOOPING;
 do
-sleep 10
+sleep 60
+
 echo -n .
 #check the messages file
 IPTERRORS=$(grep 'DeviceManager::allocIptDevice() device: ipt' /var/log/messages | grep unavailable | wc -l)
@@ -54,7 +71,7 @@ onFailure "Detected increase in IPT Errors (OldCount=$IPTERRORSTARTCOUNT, NewCou
 
 fi 
 
-MEDIAERRORS=$(grep -o 'failed to create stream' /var/log/messages | wc -l )
+MEDIAERRORS=$(grep  'failed to create stream' /var/log/messages | wc -l )
 
 #check to see if count went down, if it did reset count because file rolled over
 if [ "$MEDIAERRORS" -le "$MEDIAERRORSTARTCOUNT" ]
@@ -64,7 +81,8 @@ else
 onFailure "Detected increase in Media Errors (OldCount=$MEDIAERRORSTARTCOUNT, NewCount=$MEDIAERRORS)"
 fi
 
-STARTCOUNT=$(grep -o 'xms CLIAGENT: From Component: CLI : @ EVENT-- SYSTEM [ready]' /var/log/messages | wc -l )
+STARTCOUNT=$(grep  'From Component: CLI : @ EVENT-- SYSTEM' /var/log/messages|grep ready | wc -l )
+
 
 #check to see if count went down, if it did reset count because file rolled over
 if [ "$STARTCOUNT" -le "$RESTARTSTARTCOUNT" ]
@@ -114,13 +132,4 @@ if [ -z "$MEDIACOUNT" ]
 then
   #echo "Failed to read meters information"
   continue
-else
-  if [ "$MEDIACOUNT" -ge "$PORTTHRESH" ]
-  then
-  onFailure "Media Count Exceeded, count=$MEDIACOUNT thresh=$PORTTHRESH"
-  fi
- 
-fi
-
-done
-echo -e "Exiting failureWatchdog, failure timestamp is $FAILURETIME" 
+e
