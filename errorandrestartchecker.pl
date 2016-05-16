@@ -23,8 +23,10 @@ $restartcount = 0;
 $failcount = 0;
 $watchcount = 0;
 $inwatch = 0;
+$linesparsed = 0 ;
 open (MYFILE, $ARGV[0]);
  while (<MYFILE>) {
+     $linesparsed++;
     if( $inerror != 1){
         #increment the error count when you see any of the lines that showcase the issue
             if(/$faildetect1/){
@@ -91,8 +93,11 @@ open (MYFILE, $ARGV[0]);
         
 
  }
- print "\n\nWatch count = $watchcount\n";
- print OUTFILE "\n\nWatch count = $watchcount\n";
+ print "\n\n$linesparsed lines parsed\n";
+ print OUTFILE"\n\n$linesparsed lines parsed\n";
+ 
+ print "Watch count = $watchcount\n";
+ print OUTFILE "Watch count = $watchcount\n";
  
  print "Fail count = $failcount\n";
  print OUTFILE "Fail count = $failcount\n";
