@@ -30,13 +30,12 @@ foreach $file (@files) {
             $inblock=1;
         }elsif(/^\}/){
             $inblock=0;
-            
+            $block=format_block($block);    
             if(@ARGV < 1){
                 $pullcount++;
                 if($pullcount==1){
                     print OUTFILE "parsing" . $file . "\n";
                 }
-                $block=format_block($block);
                 print OUTFILE $block . "\n";
                 
             }else{
@@ -45,10 +44,9 @@ foreach $file (@files) {
                     $pullcount++;
                     if($pullcount==1){
                         print OUTFILE "parsing" . $file . "\n";
-                    }
-                    $block=format_block($block);
+                    }             
                     print OUTFILE "$block" . "\n";
-                 
+                    last;
                     }
                 }
             }
@@ -84,6 +82,7 @@ foreach $file (@files) {
 sub format_block{
     my ($block) = @_;
 
+    $block =~ s/%3[a|A]/:/g;
     $block =~ s/\\r\\n/\n      /g;
     $block =~ s/\\t/    /g;
     $block =~ s/></>\n       </g;
