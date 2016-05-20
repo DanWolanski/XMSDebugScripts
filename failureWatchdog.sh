@@ -1,29 +1,34 @@
-#!/bin/bash
+#!/bin/bash 
 
+#rin with this commandline
+# nohup ./failureWatchdog > failureWatchdog.log& 
+SCRIPTDIR="/root/scripts"
+
+RESTARTONPORTTHRESH=true
+LOOPTIME=60
+FAILURESCRIPT="gracefulRestart.sh"
 
 PORTCOUNT=$(curl -s http://127.0.0.1:10080/license | grep basic_audio | awk -F'"' '{print $6}')
 PORTTHRESH=$(echo "$PORTCOUNT*.9" | bc | awk -F'.' '{print $1}')
 echo -e "$PORTCOUNT Basic Audio Ports are found from WebUI"
 echo -e "$PORTTHRESH is the 90% usage threshold"
+echo -e "Restart on Port Threshold = $RESTARTONPORTTHRESH"
+
+CREATESTREAMFAIL="^(.*)appmanager:.*AppManager::onAckCreateStream.*failed to create stream, rejecting call.*";
+MEDIAFAIL="^(.*)xmserver:.*ERROR  MediaServer::onCreateStream.*Media not available.*";
+ADECERROR="^(.*)ssp_x86Linux_boot: ADEC.* could not write packet to .*";
+STARTSTR="^(.*)root: Starting: nodecontroller.*";
+STOPSTR="^(.*)root: Stopping: nodecontroller.*";
 
 setStartCounts(){
-    IPTERRORSTARTCOUNT=$(grep 'DeviceManager::allocIptDevice() device: ipt' /var/log/messages | grep unavailable | wc -l)
-    if [ -z "$IPTERRORSTARTCOUNT" ]
+    #Set the default count for Media Errors
+    ERRORSTARTCOUNT=$(grep  -P "$MEDIAFAIL|$CREATESTREAMFAIL|$ADECERROR" /var/log/messages | wc -l )
+    if [ -z "$ERRORSTARTCOUNT" ]
      then
-     IPTERRORSTARTCOUNT=0
+     ERRORSTARTCOUNT=0
     fi
-    MEDIAERRORSTARTCOUNT=$(grep  'failed to create stream' /var/log/messages | wc -l )
-    if [ -z "$MEDIAERRORSTARTCOUNT" ]
-     then
-     MEDIAERRORSTARTCOUNT=0
-    fi
-    RESTARTSTARTCOUNT=$(grep  'From Component: CLI : @ EVENT-- SYSTEM' /var/log/messages|grep ready | wc -l )
-    if [ -z "$RESTARTSTARTCOUNT" ]
-     then
-     RESTARTSTARTCOUNT=0
-    fi
-
-    echo -e "IPTErrorStartCount=$IPTERRORSTARTCOUNT, MediaErrorCountStart=$MEDIAERRORSTARTCOUNT, XMSRestartCount=$RESTARTSTARTCOUNT"
+    
+    echo -e "StartingErrorCount = $ERRORSTARTCOUNT"
 
 }
 
@@ -33,64 +38,56 @@ onFailure(){
         echo -e $1
 
         logger "failureWatchdog.sh detected a fault - $1"
-	echo "Executing xmsinfo.sh watchdog-$FAILURETIME"
-        ./xmsinfo.sh
+	echo "Executing $FAILURESCRIPT @$FAILURETIME"
+        $SCRIPTDIR/$FAILURESCRIPT
 
 	
 #to exit comment this to prevent from exit on failure
-        KEEPLOOPING=false
-	continue 
+    #KEEPLOOPING=false
+	#continue 
 #note will not get here if keeplooping line is uncommented
-
-#otherwise pause watching to prevent generation of log files
-	echo -e "\nSleeping for 30mins before resuming"
-        sleep 1800
-	echo -e"\nResuming watchdog"
 
 	setStartCounts
 
 }
 
-
+logger "Starting failureWatchdog.sh"
+#init the counters
 setStartCounts
 
 KEEPLOOPING=true
 while $KEEPLOOPING;
 do
-sleep 60
 
-echo -n .
-#check the messages file
-IPTERRORS=$(grep 'DeviceManager::allocIptDevice() device: ipt' /var/log/messages | grep unavailable | wc -l)
+timeout $LOOPTIME $SCRIPTDIR/messagefilewatcher.sh
+
+
+#cat /dev/null > tshark.out 
+#tshark -i any -R sip | grep -i "SIP Status: 503 Service Unavailable" > tshark.out &
+#PID=$!
+# Wait for 30 seconds
+#timeout $LOOPTIME $SCRIPTDIR/messagefilewatcher.sh
+# Kill it
+#kill $PID
+#TSHARKERRORCOUNT=0
+#TSHARKERRORCOUNT=$(grep -i "SIP Status: 503 Service Unavailable" tshark.out | wc -l )
 #check to see if count went down, if it did reset count because file rolled over
-if [ "$IPTERRORS" -le "$IPTERRORSTARTCOUNT" ]
+#if [ "$TSHARKERRORCOUNT" -ge "1" ]
+#then
+#onFailure "Detected 503 in SIP capture"
+#fi 
+
+
+
+ERRORCOUNT=$(grep  -P "$MEDIAFAIL|$CREATESTREAMFAIL|$ADECERROR" /var/log/messages | wc -l )
+#check to see if count went down, if it did reset count because file rolled over
+if [ "$ERRORCOUNT" -le "$ERRORSTARTCOUNT" ]
 then
-IPTERRORSTARTCOUNT=$IPTERRORS
+ERRORSTARTCOUNT=$ERRORCOUNT
 else
-onFailure "Detected increase in IPT Errors (OldCount=$IPTERRORSTARTCOUNT, NewCount=$IPTERRORS)"
+onFailure "Detected increase messages file Errors (OldCount=$ERRORSTARTCOUNT, NewCount=$ERRORCOUNT)"
 
 fi 
-
-MEDIAERRORS=$(grep  'failed to create stream' /var/log/messages | wc -l )
-
-#check to see if count went down, if it did reset count because file rolled over
-if [ "$MEDIAERRORS" -le "$MEDIAERRORSTARTCOUNT" ]
-then
-MEDIAERRORSTARTCOUNT=$MEDIAERRORS
-else
-onFailure "Detected increase in Media Errors (OldCount=$MEDIAERRORSTARTCOUNT, NewCount=$MEDIAERRORS)"
-fi
-
-STARTCOUNT=$(grep  'From Component: CLI : @ EVENT-- SYSTEM' /var/log/messages|grep ready | wc -l )
-
-
-#check to see if count went down, if it did reset count because file rolled over
-if [ "$STARTCOUNT" -le "$RESTARTSTARTCOUNT" ]
-then
-RESTARTSTARTCOUNT=$STARTCOUNT
-else
-onFailure "Detected increase in Restart (OldCount=$RESTARTSTARTCOUNT, NewCount=$STARTCOUNT)"
-fi
 
 #check signaling
 RTPCOUNT=$(cat /var/lib/xms/meters/currentValue.txt | grep xmsResources.xmsRtpSessions | awk -F' ' '{print $3}')
@@ -132,4 +129,14 @@ if [ -z "$MEDIACOUNT" ]
 then
   #echo "Failed to read meters information"
   continue
-e
+else
+  if [ "$MEDIACOUNT" -ge "$PORTTHRESH" ]
+  then
+  onFailure "Media Count Exceeded, count=$MEDIACOUNT thresh=$PORTTHRESH"
+  fi
+ 
+fi
+
+done
+echo -e "Exiting failureWatchdog, failure timestamp is $FAILURETIME" 
+logger "Exiting failureWatchdog.sh"
