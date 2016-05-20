@@ -78,7 +78,6 @@ setfail() {
 }
 
 
-logger "User has intiated a Graceful Shutdown of XMS via gracefulShutdown.sh"
 
 step "Saving any system infomration for debug"
 #todo put information gathing inforamtion here such as xmsinfo.sh or gencores.sh
@@ -104,19 +103,19 @@ KEEPLOOPING=true
 while $KEEPLOOPING ;
 do
    SIPCOUNT=$(cat /var/lib/xms/meters/currentValue.txt | grep xmsResources.xmsSignalingSessions | awk -F' ' '{print $3}')
-if [ -z "$SIPCOUNT" ] 
+if [[ -z "$SIPCOUNT" ]];
 then 
 SIPCOUNT="N/A" 
 fi 
 MEDIACOUNT=$(cat /var/lib/xms/meters/currentValue.txt | grep xmsResources.xmsMediaTransactions | awk -F' ' '{print $3}')   
-if [ -z "$MEDIACOUNT" ] 
+if [[ -z "$MEDIACOUNT" ]]; 
 then 
 MEDIACOUNT="N/A" 
 fi
  
 STATE="$(curl -s http://127.0.0.1:10080/services | grep -P -o 'state=".*?"'|awk -F '"' '{print $2}')"
 	echo -e "State=$STATE, SIPCOUNT=$SIPCOUNT, MediaTransaction=$MEDIACOUNT" >> $LOG
-   if [ $STATE = "STOPPED" ]
+   if [[ $STATE -eq "STOPPED" ]];
    then
 	KEEPLOOPING=false
    else

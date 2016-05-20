@@ -104,19 +104,19 @@ KEEPLOOPING=true
 while $KEEPLOOPING ;
 do
    SIPCOUNT=$(cat /var/lib/xms/meters/currentValue.txt | grep xmsResources.xmsSignalingSessions | awk -F' ' '{print $3}')
-if [ -z "$SIPCOUNT" ] 
+if [[ -z "$SIPCOUNT" ]];
 then 
 SIPCOUNT="N/A" 
 fi 
 MEDIACOUNT=$(cat /var/lib/xms/meters/currentValue.txt | grep xmsResources.xmsMediaTransactions | awk -F' ' '{print $3}')   
-if [ -z "$MEDIACOUNT" ] 
+if [[ -z "$MEDIACOUNT" ]]; 
 then 
 MEDIACOUNT="N/A" 
 fi
  
 STATE="$(curl -s http://127.0.0.1:10080/services | grep -P -o 'state=".*?"'|awk -F '"' '{print $2}')"
 	echo -e "State=$STATE, SIPCOUNT=$SIPCOUNT, MediaTransaction=$MEDIACOUNT" >> $LOG
-   if [ $STATE = "STOPPED" ]
+   if [[ $STATE -eq "STOPPED" ]];
    then
 	KEEPLOOPING=false
    else
@@ -181,4 +181,4 @@ next
 printf "  Complete Execution time: %.3f seconds\n" $dur | tee -a $LOG
 
 echo -e "Log saved to $LOG \n"
-echo -e "Process complete, services have been stopped.  You may now 'shutdown' or restart services via 'service nodecontroller start'\n.
+echo -e "Process complete, services have been stopped.  You may now 'shutdown' or restart services via 'service nodecontroller start\n"
