@@ -1,9 +1,28 @@
 #!/bin/bash 
 
-#rin with this commandline
-# nohup ./failureWatchdog > failureWatchdog.log& 
-SCRIPTDIR="/root/scripts"
+#run with this commandline
+# nohup ./failureWatchdog >> failureWatchdog.log&
 
+# Use a lockfile containing the pid of the running process
+# If script crashes and leaves lockfile around, it will have a different pid so
+# will not prevent script running again.
+#
+lf=/tmp/pidLockFile4failureWatchdog
+# create empty lock file if none exists
+cat /dev/null >> $lf
+read lastPID < $lf
+# if lastPID is not null and a process with that pid exists , exit
+if [ ! -z "$lastPID" -a -d /proc/$lastPID ]; then
+ echo Dected another instance running, please terminate $lastPID before running again
+exit
+else
+ echo Lock Obtained!
+fi
+# save my pid in the lock file
+echo $$ > $lf
+
+#definitions and defines
+SCRIPTDIR="/root/scripts"
 RESTARTONPORTTHRESH=true
 LOOPTIME=60
 FAILURESCRIPT="gracefulRestart.sh"
@@ -34,10 +53,10 @@ setStartCounts(){
 
 onFailure(){
        
-	FAILURETIME=`date +"%y-%m-%d:%H-%m-%s"`
-        echo -e $1
+	FAILURETIME=`date +"%y-%m-%d:%H-%M-%S"`
+        echo -e $1 @ $FAILURETIME
 
-        logger "failureWatchdog.sh detected a fault - $1"
+        logger "$0 detected a fault - $1"
 	echo "Executing $FAILURESCRIPT @$FAILURETIME"
         $SCRIPTDIR/$FAILURESCRIPT
 
@@ -51,7 +70,7 @@ onFailure(){
 
 }
 
-logger "Starting failureWatchdog.sh"
+logger "Starting $0"
 #init the counters
 setStartCounts
 
@@ -86,55 +105,64 @@ then
 ERRORSTARTCOUNT=$ERRORCOUNT
 else
 onFailure "Detected increase messages file Errors (OldCount=$ERRORSTARTCOUNT, NewCount=$ERRORCOUNT)"
-
 fi 
 
-#check signaling
-RTPCOUNT=$(cat /var/lib/xms/meters/currentValue.txt | grep xmsResources.xmsRtpSessions | awk -F' ' '{print $3}')
-#echo -e "RTPCOUNT=$RTPCOUNT"
+STATE="$(curl -s http://127.0.0.1:10080/services | grep -P -o 'state=".*?"'|awk -F '"' '{print $2}')"
+   if [[ $STATE == "FAILED" ]];
+   then
+          onFailure "Services detected to be in FAILED state"
+   fi
 
-if [ -z "$RTPCOUNT" ]
-then
-  #echo "Failed to read meters information"
-  continue
-else
-  if [ "$RTPCOUNT" -ge "$PORTTHRESH" ]
-  then
-  onFailure "RTP Count Exceeded, count=$RTPCOUNT thresh=$PORTTHRESH"
-  fi
 
-fi
 
-#check Signaling
-SIPCOUNT=$(cat /var/lib/xms/meters/currentValue.txt | grep xmsResources.xmsSignalingSessions | awk -F' ' '{print $3}')
-#echo -e "SIPCOUNT=$SIPCOUNT"
+if $RESTARTONPORTTHRESH ; then
+        #check signaling
+        RTPCOUNT=$(cat /var/lib/xms/meters/currentValue.txt | grep xmsResources.xmsRtpSessions | awk -F' ' '{print $3}')
+        #echo -e "RTPCOUNT=$RTPCOUNT"
 
-if [ -z "$SIPCOUNT" ]
-then
-  #echo "Failed to read meters information"
-  continue
-else
-  if [ "$SIPCOUNT" -ge "$PORTTHRESH" ]
-  then
-  onFailure "SIP Count Exceeded, count=$SIPCOUNT thresh=$PORTTHRESH"
-  fi
+        if [ -z "$RTPCOUNT" ]
+        then
+          #echo "Failed to read meters information"
+          continue
+        else
+          if [ "$RTPCOUNT" -ge "$PORTTHRESH" ]
+          then
+          onFailure "RTP Count Exceeded, count=$RTPCOUNT thresh=$PORTTHRESH"
+          fi
 
-fi
+        fi
 
-#check media transactions
-MEDIACOUNT=$(cat /var/lib/xms/meters/currentValue.txt | grep xmsResources.xmsMediaTransactions | awk -F' ' '{print $3}')
-#echo -e "MEDIACOUNT=$MEDIACOUNT"
+        #check Signaling
+        SIPCOUNT=$(cat /var/lib/xms/meters/currentValue.txt | grep xmsResources.xmsSignalingSessions | awk -F' ' '{print $3}')
+        #echo -e "SIPCOUNT=$SIPCOUNT"
 
-if [ -z "$MEDIACOUNT" ]
-then
-  #echo "Failed to read meters information"
-  continue
-else
-  if [ "$MEDIACOUNT" -ge "$PORTTHRESH" ]
-  then
-  onFailure "Media Count Exceeded, count=$MEDIACOUNT thresh=$PORTTHRESH"
-  fi
- 
+        if [ -z "$SIPCOUNT" ]
+        then
+          #echo "Failed to read meters information"
+          continue
+        else
+          if [ "$SIPCOUNT" -ge "$PORTTHRESH" ]
+          then
+          onFailure "SIP Count Exceeded, count=$SIPCOUNT thresh=$PORTTHRESH"
+          fi
+
+        fi
+
+        #check media transactions
+        MEDIACOUNT=$(cat /var/lib/xms/meters/currentValue.txt | grep xmsResources.xmsMediaTransactions | awk -F' ' '{print $3}')
+        #echo -e "MEDIACOUNT=$MEDIACOUNT"
+
+        if [ -z "$MEDIACOUNT" ]
+        then
+          #echo "Failed to read meters information"
+          continue
+        else
+          if [ "$MEDIACOUNT" -ge "$PORTTHRESH" ]
+          then
+          onFailure "Media Count Exceeded, count=$MEDIACOUNT thresh=$PORTTHRESH"
+          fi
+
+        fi
 fi
 
 done

@@ -2,13 +2,15 @@
 
 . /etc/init.d/functions
 
-LOG="gracefulRestart.log"
-STARTTIME=`date +"%y-%m-%d_%H-%m-%s"` 
+LOG="gracefulShutdown.log"
+STARTTIME=`date +"%y-%m-%d_%H-%M-%s"` 
 
 SHUTDOWNTIMER=360
-
-echo $STARTTIME > $LOG
+echo '--------------------------------------------------------------------------------------' >> $LOG
+echo $STARTTIME >> $LOG
 echo `hostname` >> $LOG
+echo '--------------------------------------------------------------------------------------' >> $LOG
+
 # Use step(), try(), and next() to perform a series of commands and print
 # [  OK  ] or [FAILED] at the end. The step as a whole fails if any individual
 # command fails.
@@ -100,32 +102,41 @@ setpass;
 next
 
 step "Waiting for graceful shutdown to complete"
-KEEPLOOPING=true
-while $KEEPLOOPING ;
+
+LOOPTIMEOUT=$(($SHUTDOWNTIMER+120 ));
+LOOPTIMEOUT=$(($LOOPTIMEOUT/10));
+#echo -e "Looptimeout=${LOOPTIMEOUT}\n"  ;
+while [ $LOOPTIMEOUT -gt 0 ]  ;
 do
    SIPCOUNT=$(cat /var/lib/xms/meters/currentValue.txt | grep xmsResources.xmsSignalingSessions | awk -F' ' '{print $3}')
-if [[ -z "$SIPCOUNT" ]];
-then 
-SIPCOUNT="N/A" 
-fi 
-MEDIACOUNT=$(cat /var/lib/xms/meters/currentValue.txt | grep xmsResources.xmsMediaTransactions | awk -F' ' '{print $3}')   
-if [[ -z "$MEDIACOUNT" ]]; 
-then 
-MEDIACOUNT="N/A" 
-fi
+   if [[ -z "$SIPCOUNT" ]];
+   then 
+       SIPCOUNT="N/A" 
+    fi 
+    
+    MEDIACOUNT=$(cat /var/lib/xms/meters/currentValue.txt | grep xmsResources.xmsMediaTransactions | awk -F' ' '{print $3}')   
+    if [[ -z "$MEDIACOUNT" ]]; 
+    then 
+        MEDIACOUNT="N/A" 
+    fi
  
 STATE="$(curl -s http://127.0.0.1:10080/services | grep -P -o 'state=".*?"'|awk -F '"' '{print $2}')"
 	echo -e "State=$STATE, SIPCOUNT=$SIPCOUNT, MediaTransaction=$MEDIACOUNT" >> $LOG
-   if [[ $STATE -eq "STOPPED" ]];
+   if [[ $STATE == "STOPPED" ]];
    then
-	KEEPLOOPING=false
+	   LOOPTIMEOUT=0
+   elif [[ $STATE == "FAILED" ]];
+   then
+       LOOPTIMEOUT=0
    else
+    (( LOOPTIMEOUT-- ))
 	echo -n "."
 	sleep 10
    fi
 done
 setpass;
 next
+
 
 #Step 3-Stop the Nodecontroller (TODO- Update this to graceful shutdown)
 #step "Stoping nodecontroller service" 
