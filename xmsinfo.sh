@@ -82,12 +82,17 @@ echo "proc/cpuinfo" >> /var/log/xms/additionalinfo.out
 echo "----------------------------------------------------------------------------" >> /var/log/xms/additionalinfo.out
 cat /proc/cpuinfo >> /var/log/xms/additionalinfo.out
 echo "----------------------------------------------------------------------------" >> /var/log/xms/additionalinfo.out
+echo "lscpu" >> /var/log/xms/additionalinfo.out
+echo "----------------------------------------------------------------------------" >> /var/log/xms/additionalinfo.out
+lscpu >> /var/log/xms/additionalinfo.out
+echo "----------------------------------------------------------------------------" >> /var/log/xms/additionalinfo.out
 echo "/etc/system-release" >> /var/log/xms/additionalinfo.out
 echo "----------------------------------------------------------------------------" >> /var/log/xms/additionalinfo.out
 cat /etc/system-release >> /var/log/xms/additionalinfo.out
 echo "----------------------------------------------------------------------------" >> /var/log/xms/additionalinfo.out
 echo "cron tasks" >> /var/log/xms/additionalinfo.out
 echo "----------------------------------------------------------------------------" >> /var/log/xms/additionalinfo.out
+crontab -l >> /var/log/xms/additionalinfo.out
 cat /etc/passwd | sed 's/^\([^:]*\):.*$/crontab -u \1 -l 2>\&1/' | grep -v "no crontab for" | sh >> /var/log/xms/additionalinfo.out
 echo "----------------------------------------------------------------------------" >> /var/log/xms/additionalinfo.out
 echo "ethtool --show-offload" >> /var/log/xms/additionalinfo.out
