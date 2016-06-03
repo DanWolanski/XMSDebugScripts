@@ -91,6 +91,7 @@ do
        
         echo -e  "$looptime-$hostname\n" >> topthreads-output.txt
         top -b -n 1 -H >> topthreads-output.txt
+        pmap -XX `pidof vxmlinterpreter`  >> vxml-pmap.txt
 	
         rm -f tmptop.txt
         rm -f tmpps.txt
