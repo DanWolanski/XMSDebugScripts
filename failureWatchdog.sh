@@ -28,6 +28,9 @@ LOOPTIME=60
 FAILURESCRIPT="gracefulRestart.sh"
 
 PORTCOUNT=$(curl -s http://127.0.0.1:10080/license | grep basic_audio | awk -F'"' '{print $6}')
+#ToDo:  Need to put check in to ensure that the port count is obtained, nodecontroller being stopped when this runs
+# or firewall prevention may lead to an issue with being able to detect port count
+
 PORTTHRESH=$(echo "$PORTCOUNT*.9" | bc | awk -F'.' '{print $1}')
 echo -e "$PORTCOUNT Basic Audio Ports are found from WebUI"
 echo -e "$PORTTHRESH is the 90% usage threshold"
