@@ -1,7 +1,7 @@
 #!/bin/bash
 . /etc/init.d/functions
 
-LOG="output.log"
+LOG="cacheClear.log"
 STARTTIME=`date +"%y-%m-%d_%H-%m-%s"` 
 echo $STARTTIME > $LOG
 echo `hostname` >> $LOG
@@ -73,26 +73,18 @@ setfail() {
     [[ -w /tmp ]] && echo $STEP_OK > /tmp/step.$$
 }
 
-#Step 1-display current settings
-step "Checking current httpclient cache"
-VALUE="$(curl -s http://127.0.0.1:10080/httpclient | grep cache)"
-#TODO Check to see if it is currently on and only reset if it is
-setpass;
-next
-echo -e "\n   Current Value = {$VALUE}\n" | tee -a $LOG
-
-#Step 2-disable cache either via this or the WebUI
-step "Turning off Cache setting\n" 
-RES="$(curl -s -H 'Content-Type: application/json' -X PUT  -d '{"cache":"no"}' 127.0.0.1:10080/httpclient)"
-#TODO Check response code to ensure it is set
-setpass;
-next
-echo -e "Response\n {$RES} \n\n" | tee -a $LOG
-
 #Step 3-Stop the Nodecontroller (TODO- Update this to graceful shutdown)
-#step "Stoping nodecontroller service" 
+#step "Stoping nodecontroller service"
 echo "STEP - Stopping nodecontroller">>$LOG
-service nodecontroller stop | tee -a $LOG
+if [[ -x "./gracefulShutdown.sh" ]]
+then
+    echo "File '$file' is executable" >> $LOG
+    ./gracefulShutdown.sh | tee -a $LOG
+else
+    echo "File '$file' is not executable or found" >> $LOG
+    service nodecontroller stop | tee -a $LOG
+fi
+
 
 #Step 4-check the number of files in the cache
 step "Checking the number of files in cache\n"
