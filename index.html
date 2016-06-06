@@ -22,108 +22,132 @@
       <h1>
 <a id="xmsdebugscripts" class="anchor" href="#xmsdebugscripts" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>XMSDebugScripts</h1>
 
-<p>This is a set of scripts and debug tools that can be used to troubleshoot XMS Support issues
-XMSInfo / XMSInfo_lite
-    These are two scripts that can be used to assist in collecting data for new issues or as part of regular checkups on the system.
-    The main difference in the two is that the lite script will not pull all of the WebUI data and will not include several of the XMS/Dialogic logs. This was done to speed up collection time and filesize.
-    To run just run the executable
-    ./xmsinfo.sh
+<p>This is a set of scripts and debug tools that can be used to troubleshoot XMS Support issues</p>
+
+<h3>
+<a id="xmsinfo--xmsinfo_lite" class="anchor" href="#xmsinfo--xmsinfo_lite" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>XMSInfo / XMSInfo_lite</h3>
+
+<pre><code>These are two scripts that can be used to assist in collecting data for new issues or as part of regular checkups on the system.
+The main difference in the two is that the lite script will not pull all of the WebUI data and will not include several of the XMS/Dialogic logs. This was done to speed up collection time and filesize.
+To run just run the executable
+</code></pre>
+
+<div class="highlight highlight-source-shell"><pre>    ./xmsinfo.sh
     ./xmsinfo_lite.sh
-    Each will make a tgz with the output. You can find some useful system level information in the additionalinfo.out, some performance data in the toplog.out or the the sar.out. You can get some details on cache size and media files. Lastly you can get the messages file for offline review</p>
-
-<p>MONITOR
-    This script will monitor system performance and usage information. This can be used as a check console, or it can be let running and save the data to file
-    To view in window just run
+    <span class="pl-s"><span class="pl-pds">`</span><span class="pl-pds">`</span><span class="pl-pds">`</span></span>
+<span class="pl-s">    Each will make a tgz with the output. You can find some useful system level information <span class="pl-k">in</span> the additionalinfo.out, some performance data <span class="pl-k">in</span> the toplog.out or the the sar.out. You can get some details on cache size and media files. Lastly you can get the messages file <span class="pl-k">for</span> offline review</span>
+<span class="pl-s"></span>
+<span class="pl-s"><span class="pl-c">### MONITOR</span></span>
+<span class="pl-s">    This script will monitor system performance and usage information. This can be used as a check console, or it can be <span class="pl-c1">let</span> running and save the data to file</span>
+<span class="pl-s">    To view <span class="pl-k">in</span> window just run</span>
+<span class="pl-s">    <span class="pl-pds">`</span><span class="pl-pds">`</span><span class="pl-pds">`</span></span> bash
     ./monitor.sh
-    To save to file run via
-    nohup ./monitor.sh &gt; /dev/null &amp;
-    In this mode it will keep 3 days worth of performance data</p>
-
-<p>GenXMSCores
-    This will force the cores for all the XMS processes and HMP core components.
-    This can be used to collect state in case of hang or state issue.
-    This can be run directly
-    ./genXMSCores.sh
-    You should also include xmsinfo and monitor output if possible with the cores.</p>
-
-<p>FailureWatchdog
-    This script will monitor for several error conditions.  It will then restart and/or collect data automaticly</p>
-
-<p>Script-gracefulRestart/Shutdown
-    These are a set of scripts that can be used to shutdown/restart the services gracefully
-    The scripts will
-    1-Reset the Graceful shutdown timer
-    2-Issue CURL to set XMS out of service
-    3-Wait for system to stop
-    4-stop the nodecontroller
-    5-clear out the cache files
-    (6)-restart the services
-    Note: Shutdown doesn't include 6, but includes others
-    These scripts are used in a number of ways. They are used by the tech team to shudown and restart the servers. Also, they are used via the watchdog timer.
-    To use just call it from the shell
-    ./gracefulShutdown.sh</p>
-
-<p>ClearandDisable File Cache
-    Script to clear out the files left in the cache by crashes and other tasks. This will also disable the http caching.
-    Was used to work around the delay in playback issue. Cache should remain disabled and clear is not baked into the gracefulRestart scripts. However, mentioning it for historical resons in case they startup a new MRF
-    To run execute
-    ./clearanddisable.sh</p>
-
-<p>ErrorAndRestart Checker
-    This script is used to search though the messages file for error triggers and report them.
-    One and done errors (seen once indicates errors)
-    -
-    Threshold errors where you need x in y messages to trigger
-    -
-    Watch strings that will report but not count as error
-    -
-    Restart counters
-    -
-    It supports a few different types of detects
-    To run this you can just issue
-    ./errorandrestartchecker.pl var/log/messages
-    The output looks like this
-    Opening pvm1mrf1\var\log\messages-20160501 for parsing....
-    Apr 25 18:38:29 pvm1mrf1 -Error Detected via threshold
-    Apr 25 19:41:53 pvm1mrf1 -Restart detected (Recovering from Error)
-    Apr 27 23:02:17 pvm1mrf1 -Restart detected (NOT restarting due to Error)
-    Apr 27 23:10:40 pvm1mrf1 -Restart detected (NOT restarting due to Error)
-    Apr 29 13:54:11 pvm1mrf1 -Restart detected (NOT restarting due to Error)
-    Apr 29 21:18:44 pvm1mrf1 -Error Detected via ADEC could not write packet
-    Apr 30 09:52:09 pvm1mrf1 -Restart detected (Recovering from Error)
-    Apr 30 20:50:20 pvm1mrf1 -Error Detected via threshold
-    Apr 30 21:34:02 pvm1mrf1 -Restart detected (Recovering from Error)
-    230218 lines parsed
-    SNMP trap count = 59
-    Watch count = 0
-    Fail count = 3
-    Recovery count = 0
-    Restart count = 6
-    Current state is NO ERROR</p>
-
-<p>Appman Log Parser
-    This script will search though appman for any list of regex strings. Then call sessions that match that string will be separated out into their own file.
-    You can quickly extract call flows based on callID, error codes, filenames etc
-    Note running with no command line args will break the file up in to all the sessions in their own file. If you do this for production logs you will generate thousands of files
-    Ex, say you see an error in call ID 6e76335c-7e0c-4485-bccc-5845d8e53764, calling
-    appmanLogExtractor.pl 6e76335c-7e0c-4485-bccc-5845d8e53764
-    Simarly you can put multiple call ids, error codes to match (they are or relationship).
-    This is good if you have a failed file you want to check where it was from, trace call IDs, pull out all calls with same error etc.</p>
-
-<p>Dump WebUI
-    This script will dump out the contents of the WebUI via the REST API</p>
-
-<p>genbtfromcores
-    This can be executed to automaticly generate the Backtrace from the a collection of cores.  This is useful to run to provide some information if the core files are too large to transfer</p>
-
-<p>Matcher
-    This script will match 2 strings keeping a running total of the count.  Useful for determining leaks and matching starts/stops, opens closed etc</p>
-
-<p>AutoGenComments
-    This will search though a log and highlight frequently viewed content</p>
-
-<p>AutoPullComments
-    This will extract the comments from the autoGenComments of ones that are hand tagged</p>
+    <span class="pl-s"><span class="pl-pds">`</span><span class="pl-pds">`</span><span class="pl-pds">`</span></span>
+<span class="pl-s">    To save to file run via</span>
+<span class="pl-s">    <span class="pl-pds">`</span><span class="pl-pds">`</span><span class="pl-pds">`</span></span> bash
+    nohup ./monitor.sh <span class="pl-k">&gt;</span> /dev/null <span class="pl-k">&amp;</span>
+    <span class="pl-s"><span class="pl-pds">`</span><span class="pl-pds">`</span><span class="pl-pds">`</span></span>
+<span class="pl-s">    This too will keep 7 days worth of performance data</span>
+<span class="pl-s"></span>
+<span class="pl-s"><span class="pl-c">### GenXMSCores</span></span>
+<span class="pl-s">    This will force the cores <span class="pl-k">for</span> all the XMS processes and HMP core components.</span>
+<span class="pl-s">    This can be used to collect state <span class="pl-k">in</span> <span class="pl-k">case</span> of hang or state issue.</span>
+<span class="pl-s">    This can be run directly</span>
+<span class="pl-s">    <span class="pl-s"><span class="pl-pds">`</span><span class="pl-pds">`</span><span class="pl-pds">`</span> bash</span></span>
+<span class="pl-s"><span class="pl-s">    ./genXMSCores.sh</span></span>
+<span class="pl-s"><span class="pl-s">    <span class="pl-pds">`</span><span class="pl-pds">`</span><span class="pl-pds">`</span></span></span>
+<span class="pl-s">    You should also include xmsinfo and monitor output <span class="pl-k">if</span> possible with the cores.</span>
+<span class="pl-s"></span>
+<span class="pl-s"><span class="pl-c">### FailureWatchdog</span></span>
+<span class="pl-s">    This script will monitor <span class="pl-k">for</span> several error conditions.  It will <span class="pl-k">then</span> restart and/or collect data automaticly</span>
+<span class="pl-s"></span>
+<span class="pl-s"><span class="pl-c">### Script-gracefulRestart/Shutdown</span></span>
+<span class="pl-s">    These are a <span class="pl-c1">set</span> of scripts that can be used to shutdown/restart the services gracefully</span>
+<span class="pl-s">    The scripts will</span>
+<span class="pl-s">    -Reset the Graceful shutdown timer</span>
+<span class="pl-s">    -Issue CURL to <span class="pl-c1">set</span> XMS out of service</span>
+<span class="pl-s">    -Wait <span class="pl-k">for</span> system to stop</span>
+<span class="pl-s">    -stop the nodecontroller</span>
+<span class="pl-s">    -clear out the cache files</span>
+<span class="pl-s">    -restart the services</span>
+<span class="pl-s">    _Note: Shutdown doesn<span class="pl-s"><span class="pl-pds">'</span>t include 6, but includes others_</span></span>
+<span class="pl-s"><span class="pl-s"></span></span>
+<span class="pl-s"><span class="pl-s">    These scripts are used in a number of ways. They are used by the tech team to shudown and restart the servers. Also, they are used via the watchdog timer.</span></span>
+<span class="pl-s"><span class="pl-s">    To use just call it from the shell</span></span>
+<span class="pl-s"><span class="pl-s">    ``` bash</span></span>
+<span class="pl-s"><span class="pl-s">    ./gracefulShutdown.sh</span></span>
+<span class="pl-s"><span class="pl-s">    ```</span></span>
+<span class="pl-s"><span class="pl-s">### CacheClear and CacheClearandDisable</span></span>
+<span class="pl-s"><span class="pl-s">    Script to clear out the files left in the cache by crashes and other tasks. This will also disable the http caching.</span></span>
+<span class="pl-s"><span class="pl-s">    Was used to work around the delay in playback issue. Cache should remain disabled and clear is not baked into the gracefulRestart scripts. However, mentioning it for historical resons in case they startup a new MRF</span></span>
+<span class="pl-s"><span class="pl-s">    To run execute</span></span>
+<span class="pl-s"><span class="pl-s">    ``` bash</span></span>
+<span class="pl-s"><span class="pl-s">    ./clearanddisable.sh</span></span>
+<span class="pl-s"><span class="pl-s">    ```</span></span>
+<span class="pl-s"><span class="pl-s">### ErrorAndRestart Checker</span></span>
+<span class="pl-s"><span class="pl-s">    This script is used to search though the messages file for error triggers and report them.</span></span>
+<span class="pl-s"><span class="pl-s">    One and done errors (seen once indicates errors)</span></span>
+<span class="pl-s"><span class="pl-s">    - Threshold errors where you need x in y messages to trigger</span></span>
+<span class="pl-s"><span class="pl-s">    - Watch strings that will report but not count as error</span></span>
+<span class="pl-s"><span class="pl-s">    - Restart counters</span></span>
+<span class="pl-s"><span class="pl-s">    - It supports a few different types of detects</span></span>
+<span class="pl-s"><span class="pl-s">    To run this you can just issue</span></span>
+<span class="pl-s"><span class="pl-s">    ``` bash</span></span>
+<span class="pl-s"><span class="pl-s">    ./errorandrestartchecker.pl var/log/messages</span></span>
+<span class="pl-s"><span class="pl-s">    ```</span></span>
+<span class="pl-s"><span class="pl-s">    The output looks like this</span></span>
+<span class="pl-s"><span class="pl-s">    ``` bash</span></span>
+<span class="pl-s"><span class="pl-s">    Opening pvm1mrf1\var\log\messages-20160501 for parsing....</span></span>
+<span class="pl-s"><span class="pl-s">    Apr 25 18:38:29 pvm1mrf1 -Error Detected via threshold</span></span>
+<span class="pl-s"><span class="pl-s">    Apr 25 19:41:53 pvm1mrf1 -Restart detected (Recovering from Error)</span></span>
+<span class="pl-s"><span class="pl-s">    Apr 27 23:02:17 pvm1mrf1 -Restart detected (NOT restarting due to Error)</span></span>
+<span class="pl-s"><span class="pl-s">    Apr 27 23:10:40 pvm1mrf1 -Restart detected (NOT restarting due to Error)</span></span>
+<span class="pl-s"><span class="pl-s">    Apr 29 13:54:11 pvm1mrf1 -Restart detected (NOT restarting due to Error)</span></span>
+<span class="pl-s"><span class="pl-s">    Apr 29 21:18:44 pvm1mrf1 -Error Detected via ADEC&lt;1142&gt; could not write packet</span></span>
+<span class="pl-s"><span class="pl-s">    Apr 30 09:52:09 pvm1mrf1 -Restart detected (Recovering from Error)</span></span>
+<span class="pl-s"><span class="pl-s">    Apr 30 20:50:20 pvm1mrf1 -Error Detected via threshold</span></span>
+<span class="pl-s"><span class="pl-s">    Apr 30 21:34:02 pvm1mrf1 -Restart detected (Recovering from Error)</span></span>
+<span class="pl-s"><span class="pl-s">    230218 lines parsed</span></span>
+<span class="pl-s"><span class="pl-s">    SNMP trap count = 59</span></span>
+<span class="pl-s"><span class="pl-s">    Watch count = 0</span></span>
+<span class="pl-s"><span class="pl-s">    Fail count = 3</span></span>
+<span class="pl-s"><span class="pl-s">    Recovery count = 0</span></span>
+<span class="pl-s"><span class="pl-s">    Restart count = 6</span></span>
+<span class="pl-s"><span class="pl-s">    Current state is NO ERROR</span></span>
+<span class="pl-s"><span class="pl-s">    ```</span></span>
+<span class="pl-s"><span class="pl-s"></span></span>
+<span class="pl-s"><span class="pl-s">### Appman Log Parser</span></span>
+<span class="pl-s"><span class="pl-s">    This script will search though appman for any list of regex strings. Then call sessions that match that string will be separated out into their own file.</span></span>
+<span class="pl-s"><span class="pl-s">    You can quickly extract call flows based on callID, error codes, filenames etc</span></span>
+<span class="pl-s"><span class="pl-s"></span></span>
+<span class="pl-s"><span class="pl-s">    Note running with no command line args will break the file up in to all the sessions in their own file. If you do this for production logs you will generate thousands of files</span></span>
+<span class="pl-s"><span class="pl-s">    Ex, say you see an error in call ID 6e76335c-7e0c-4485-bccc-5845d8e53764, calling</span></span>
+<span class="pl-s"><span class="pl-s">    `appmanLogExtractor.pl 6e76335c-7e0c-4485-bccc-5845d8e53764`</span></span>
+<span class="pl-s"><span class="pl-s"></span></span>
+<span class="pl-s"><span class="pl-s">    Simarly you can put multiple call ids, error codes to match (they are or relationship).</span></span>
+<span class="pl-s"><span class="pl-s">    This is good if you have a failed file you want to check where it was from, trace call IDs, pull out all calls with same error etc.</span></span>
+<span class="pl-s"><span class="pl-s"></span></span>
+<span class="pl-s"><span class="pl-s">### Dump WebUI</span></span>
+<span class="pl-s"><span class="pl-s">    This script will dump out the contents of the WebUI via the REST API</span></span>
+<span class="pl-s"><span class="pl-s"></span></span>
+<span class="pl-s"><span class="pl-s">### genbtfromcores</span></span>
+<span class="pl-s"><span class="pl-s">    This can be executed to automaticly generate the Backtrace from the a collection of cores.  This is useful to run to provide some information if the core files are too large to transfer</span></span>
+<span class="pl-s"><span class="pl-s"></span></span>
+<span class="pl-s"><span class="pl-s">### Matcher</span></span>
+<span class="pl-s"><span class="pl-s">    This script will match 2 strings keeping a running total of the count.  Useful for determining leaks and matching starts/stops, opens closed etc</span></span>
+<span class="pl-s"><span class="pl-s"></span></span>
+<span class="pl-s"><span class="pl-s">### AutoGenComments</span></span>
+<span class="pl-s"><span class="pl-s">    This will search though a log and highlight frequently viewed content</span></span>
+<span class="pl-s"><span class="pl-s"></span></span>
+<span class="pl-s"><span class="pl-s">### AutoPullComments</span></span>
+<span class="pl-s"><span class="pl-s">    This will extract the comments from the autoGenComments of ones that are hand tagged</span></span>
+<span class="pl-s"><span class="pl-s"></span></span>
+<span class="pl-s"><span class="pl-s">### metersCSVExtractor.pl</span></span>
+<span class="pl-s"><span class="pl-s">metersCSVExtractor.pl basicaudio amraudio xmsRtpSessions xmsSignalingSessions xmsMediaTransactions msrp.active.session</span></span>
+<span class="pl-s"><span class="pl-s"></span></span>
+<span class="pl-s"><span class="pl-s">You don’t need the full names, just enough to ensure they are unique and remember they are case sensitive.</span></span>
+<span class="pl-s"><span class="pl-s"></span></span>
+<span class="pl-s"><span class="pl-s">This will generate out a meters.csv file with the values from each</span></span></pre></div>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/DanWolanski/XMSDebugScripts">Xmsdebugscripts</a> is maintained by <a href="https://github.com/DanWolanski">DanWolanski</a>.</span>
