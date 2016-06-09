@@ -53,7 +53,7 @@ open (OUTFILE, ">report.out");
 print OUTFILE "------------------------------------------------------------\n";
 
 my $errorcount = 0;
-my $errorthreshold = 20;
+my $errorthreshold = 1;
 my $errorts = "";
 my $inerror = 0;
 my $snmpcount = 0;
@@ -62,7 +62,7 @@ my $failcount = 0;
 my $watchcount = 0;
 my $recoverycount = 0;
 my $linesparsed = 0 ;
-
+my $lasterror = "" ;
 
 open (MYFILE, $ARGV[0]);
  while (<MYFILE>) {
@@ -74,14 +74,17 @@ open (MYFILE, $ARGV[0]);
             if(/$failOnAck/){
                     $errorcount++;
                     $errorts=$1;
+					$lasterr=$2;
             }
             elsif(/$failCreateStream/){
                     $errorcount++;
                     $errorts=$1;
+					$lasterr=$2;
             }
             elsif(/$failIptUnavailable/){
                     $errorcount++;
                     $errorts=$1;
+					$lasterr=$2;
             }
             else{
             #decrement if you hit a line that doesn't show the issue
@@ -90,9 +93,10 @@ open (MYFILE, $ARGV[0]);
 
             if( $errorcount > $errorthreshold){
                 #if we hit the error threshold then we need to trigger and save it
-                print OUTFILE "$errorts - Error Detected via threshold\n";
-				print "$errorts - Error Detected via threshold\n";
+                print OUTFILE "$errorts - Error Detected via threshold ($lasterr)\n";
+				print "$errorts - Error Detected via threshold ($lasterr)\n";
                 $inerror=1;
+				$lasterror="";
                 $failcount++;
 
             }elsif( $errorcount < 0){
@@ -102,20 +106,20 @@ open (MYFILE, $ARGV[0]);
         }
         if( $inerror != 1){
 	       if(/$FailADEC/){
-		      print OUTFILE "$1 - ($2)\n";
-		      print "$1 - faildetect3, ($2)\n";
+		      print OUTFILE "$1 - Error Detected via ADEC ($2)\n";
+		      print "$1 - Error Detected via ADEC ($2)\n";
 		      $failcount++;
               $inerror=1;
 	       } 
            elsif(/$failSSPRTP/){
-		      print OUTFILE "$1 - ($2)\n";
-		      print "$1 - faildetect4 ($2)\n";
+		      print OUTFILE "$1 - Error Detected via SSPRecover-RTP ($2)\n";
+		      print "$1 - Error Detected via SSPRecover-RTP ($2)\n";
 		      $failcount++;
               $inerror=1;
 	       }
            elsif(/$failSSPMedia/){
-              print OUTFILE "$1 - ($2)\n";
-		      print "$1 - faildetect5 ($2)\n";
+              print OUTFILE "$1 - Error Detected via SSPRecover-Media($2)\n";
+		      print "$1 - Error Detected via SSPRecover-Media ($2)\n";
 		      $failcount++;
               $inerror=1;
            }
