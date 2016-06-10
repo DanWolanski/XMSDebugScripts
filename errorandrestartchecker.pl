@@ -22,8 +22,11 @@ $snmptrap = "^(.*)snmp.*No access configuration - dropping trap.*";
 
 #May 20 14:47:52 pvm2mrf1 root: Stopping: nodecontroller 
 #May 20 14:51:53 pvm2mrf1 root: Starting: nodecontroller 
+#Jun  7 23:03:48 pvm1mrf1 CLIAGENT: From Component: CLI : @ EVENT-- SYSTEM [ready] @
+
 $startstr = "^(.*)root. Starting. nodecontroller.*";
 $stopstr = "^(.*)root. Stopping. nodecontroller.*";
+$startdone = "(.*)CLIAGENT. From Component. CLI . . EVENT.. SYSTEM .ready. .";
 
 #auto recover prints
 #May 20 11:47:32 sut-1181 ssp_x86Linux_boot: handle_stuck_task(): WRK10_p0 restart
@@ -48,6 +51,9 @@ $watchSSPMedia = "^(.*)ssp_x86Linux_boot. (ap_create_worker_task.* Create work t
 #May 20 14:42:59 pvm2mrf1 root: failureWatchdog.sh detected a fault - Detected increase messages file Errors (OldCount=746775, NewCount=746885)
 $watchFailureWatchdog = "^(.*)root.*(failureWatchdog.sh detected a fault).*";
 
+#Jun  7 23:03:30 pvm1mrf1 ssp_x86Linux_boot: Copyright 2000, Dialogic Corporation. DLcid 05050000-17 ipvsc_ssp May 22 2016 20:51:47
+$watchversion = "^(.*) ssp_x86Linux_boot. Copyright 2000, Dialogic Corporation\. (.*)";
+
 open (OUTFILE, ">report.out");
 
 print OUTFILE "------------------------------------------------------------\n";
@@ -63,6 +69,7 @@ my $watchcount = 0;
 my $recoverycount = 0;
 my $linesparsed = 0 ;
 my $lasterror = "" ;
+my $inrestart = "";
 
 open (MYFILE, $ARGV[0]);
  while (<MYFILE>) {
@@ -170,18 +177,28 @@ open (MYFILE, $ARGV[0]);
             $errorts="";
             $inerror=0;
             $restartcount++;
+            $inrestart="(STARTING)";
+        }
+        elsif(/$startdone/){
+            $inrestart="";
         }
         
 # other strings to watch and report
     if(/$watchSSPMedia/){
-		print OUTFILE "$1 - $2\n";
-		print "$1 - $2\n";
+		print OUTFILE "$1 - $2  $inrestart\n";
+		print "$1 - $2  $inrestart\n";
 		$watchcount++;
         
 	}
     elsif(/$watchFailureWatchdog/) {
+    	print OUTFILE "$1 - $2  $inrestart\n";
+		print "$1 - $2  $inrestart\n";
+		$watchcount++;
+    
+    }
+    elsif(/$watchversion/) {
     	print OUTFILE "$1 - $2\n";
-		print "$1 - $2\n";
+		print "$1 - SSP version = $2\n";
 		$watchcount++;
     
     }
