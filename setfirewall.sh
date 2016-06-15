@@ -1,6 +1,7 @@
 #!/bin/bash
-echo -n "Sip ports 5060/tcp and 5060/udp - "
+echo -n "Sip ports 5060/tcp - "
 firewall-cmd --zone=public --add-port=5060/tcp --permanent
+echo -n "Sip ports 5060/udp - "
 firewall-cmd --zone=public --add-port=5060/udp --permanent
 
 echo -n "Audio RTP/RTCP ports 49152-53152/udp - "
@@ -33,12 +34,18 @@ echo -n "MRB adapter ports 12000-12010/tcp - "
 firewall-cmd --zone=public --add-port=12000-12010/tcp --permanent
 
 #MRB Ports for MRB Server
-#firewall-cmd --zone=public --add-port=8888/tcp --permanent
-#firewall-cmd --zone=public --add-port=8443/tcp --permanent
-#firewall-cmd --zone=public --add-port=5070/tcp --permanent
-#firewall-cmd --zone=public --add-port=5100/udp --permanent
-#firewall-cmd --zone=public --add-port=5100/tcp --permanent
-#firewall-cmd --zone=public --add-port=5111/tcp --permanent
+echo -n "MRB adapter ports 8888/tcp - "
+firewall-cmd --zone=public --add-port=8888/tcp --permanent
+echo -n "MRB adapter ports 8443/tcp - "
+firewall-cmd --zone=public --add-port=8443/tcp --permanent
+echo -n "MRB adapter ports 5070/tcp - "
+firewall-cmd --zone=public --add-port=5070/tcp --permanent
+echo -n "MRB adapter ports 5100/udp - "
+firewall-cmd --zone=public --add-port=5100/udp --permanent
+echo -n "MRB adapter ports 5100/tcp - "
+firewall-cmd --zone=public --add-port=5100/tcp --permanent
+echo -n "MRB adapter ports 5111/tcp - "
+firewall-cmd --zone=public --add-port=5111/tcp --permanent
 
 echo "Restarting firewalld.service to apply - "
 systemctl restart firewalld.service
