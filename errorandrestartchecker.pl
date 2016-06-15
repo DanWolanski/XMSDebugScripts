@@ -1,9 +1,12 @@
 #!/usr/bin/perl
+open (OUTFILE, ">>report.out");
+print OUTFILE "------------------------------------------------------------\n";
+print OUTFILE "Opening $ARGV[0] for parsing....\n";
 print "Opening $ARGV[0] for parsing....\n";
 
 #threshold detects
 #May 19 12:08:21 pvm2mrf1 appmanager: 2016-05-19 12:08:21.130529 ERROR  AppManager::onAckCreateStream() failed to create stream, rejecting call
-#May 19 12:08:21 pvm2mrf1 xmserver: 2016-05-19 12:08:21.389067 ERROR  MediaServer::onCreateStream() Media not available. 
+#May 19 12:08:21 pvm2mrf1 xmserver: 2016-05-19 12:08:21.389067 ERROR  MediaServer::onCreateStream() Media not available.
 $failOnAck = "^(.*)appmanager.*AppManager..onAckCreateStream.*(failed to create stream, rejecting call).*";
 $failCreateStream = "^(.*)xmserver.*ERROR.*MediaServer..onCreateStream.*(Media not available).*";
 
@@ -20,8 +23,8 @@ $snmptrap = "^(.*)snmp.*No access configuration - dropping trap.*";
 
 #nodecontroller/service start/stop
 
-#May 20 14:47:52 pvm2mrf1 root: Stopping: nodecontroller 
-#May 20 14:51:53 pvm2mrf1 root: Starting: nodecontroller 
+#May 20 14:47:52 pvm2mrf1 root: Stopping: nodecontroller
+#May 20 14:51:53 pvm2mrf1 root: Starting: nodecontroller
 #Jun  7 23:03:48 pvm1mrf1 CLIAGENT: From Component: CLI : @ EVENT-- SYSTEM [ready] @
 
 $startstr = "^(.*)root. Starting. nodecontroller.*";
@@ -54,9 +57,6 @@ $watchFailureWatchdog = "^(.*)root.*(failureWatchdog.sh detected a fault).*";
 #Jun  7 23:03:30 pvm1mrf1 ssp_x86Linux_boot: Copyright 2000, Dialogic Corporation. DLcid 05050000-17 ipvsc_ssp May 22 2016 20:51:47
 $watchversion = "^(.*) ssp_x86Linux_boot. Copyright 2000, Dialogic Corporation\. (.*)";
 
-open (OUTFILE, ">report.out");
-
-print OUTFILE "------------------------------------------------------------\n";
 
 my $errorcount = 0;
 my $errorthreshold = 1;
@@ -74,8 +74,8 @@ my $inrestart = "";
 open (MYFILE, $ARGV[0]);
  while (<MYFILE>) {
      $linesparsed++;
-#failures go here     
-     #these a threshold errors, these are errors that may come up multiple time, but are only actual failures when they are seen in large quantities and over a long time.  
+#failures go here
+     #these a threshold errors, these are errors that may come up multiple time, but are only actual failures when they are seen in large quantities and over a long time.
     if( $inerror != 1){
         #increment the error count when you see any of the lines that showcase the issue
             if(/$failOnAck/){
@@ -109,7 +109,7 @@ open (MYFILE, $ARGV[0]);
             }elsif( $errorcount < 0){
                 $errorcount = 0;
             }
-            
+
         }
         if( $inerror != 1){
 	       if(/$FailADEC/){
@@ -117,7 +117,7 @@ open (MYFILE, $ARGV[0]);
 		      print "$1 - Error Detected via ADEC ($2)\n";
 		      $failcount++;
               $inerror=1;
-	       } 
+	       }
            elsif(/$failSSPRTP/){
 		      print OUTFILE "$1 - Error Detected via SSPRecover-RTP ($2)\n";
 		      print "$1 - Error Detected via SSPRecover-RTP ($2)\n";
@@ -131,14 +131,14 @@ open (MYFILE, $ARGV[0]);
               $inerror=1;
            }
         }
-        
+
         if(/$snmptrap/){
-            print OUTFILE "$1 - SNMP trap ($2)";
-#			print "$_";
+            # print OUTFILE "$1 - SNMP trap detected\n";
+            #			print "$_";
             $snmpcount++;
        }
 
-        
+
 
 #recovery
 	if(/$recoverySSPRTP/){
@@ -171,7 +171,7 @@ open (MYFILE, $ARGV[0]);
                 print OUTFILE "$1 - Restart detected (NOT restarting due to Error)\n";
 				print "$1 - Restart detected (NOT restarting due to Error)\n";
             }
-            
+
             #reset all the counters looking for next error
             $errorcount=0;
             $errorts="";
@@ -182,47 +182,47 @@ open (MYFILE, $ARGV[0]);
         elsif(/$startdone/){
             $inrestart="";
         }
-        
+
 # other strings to watch and report
     if(/$watchSSPMedia/){
 		print OUTFILE "$1 - $2  $inrestart\n";
 		print "$1 - $2  $inrestart\n";
 		$watchcount++;
-        
+
 	}
     elsif(/$watchFailureWatchdog/) {
     	print OUTFILE "$1 - $2  $inrestart\n";
 		print "$1 - $2  $inrestart\n";
 		$watchcount++;
-    
+
     }
     elsif(/$watchversion/) {
     	print OUTFILE "$1 - $2\n";
 		print "$1 - SSP version = $2\n";
 		$watchcount++;
-    
+
     }
 
  }
  print "\n\n$linesparsed lines parsed\n";
  print OUTFILE"\n\n$linesparsed lines parsed\n";
- 
- 
+
+
  print "SNMP trap count = $snmpcount\n";
  print OUTFILE "SNMP trap count = $snmpcount\n";
- 
+
  print "Watch count = $watchcount\n";
  print OUTFILE "Watch count = $watchcount\n";
- 
+
  print "Fail count = $failcount\n";
  print OUTFILE "Fail count = $failcount\n";
- 
+
  print "Recovery count = $recoverycount\n";
  print OUTFILE "Recovery count = $recoverycount\n";
- 
+
  print "Restart count = $restartcount\n";
  print OUTFILE "Restart count = $restartcount\n";
- 
+
  if($inerror==1){
     print "\nCurrent state is IN ERROR\n\n";
     print OUTFILE "\nCurrent state is IN ERROR\n\n";
@@ -230,7 +230,6 @@ open (MYFILE, $ARGV[0]);
     print "\nCurrent state is NO ERROR\n\n";
     print OUTFILE "\nCurrent state is NO ERROR\n\n";
  }
- 
+
  close (MYFILE);
  close (OUTFILE);
-
