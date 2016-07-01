@@ -13,7 +13,7 @@ my $lookingforstream=0;
 my %mediamap = ();
 my %sessionmedialist = ();
 my %sessionFlowList = ();
-
+my %fileList = ();
 my %callstatelist = ();
 
 my %activeCallList = ();
@@ -77,18 +77,23 @@ foreach $file (@files) {
                     }
                 }
                 # Map out all the session messages
-                if($block=~/"app_data" . "target_id=(.*);.*"/){
+                if($block=~/"app_data".*?"target_id=(.*?);.*"/){
+                        
                         my $session=$1;
                         my $entry="$lastts";
                         $block=~/"type".*?"(.*?)"/;
                         my $entry=$entry . " $1 " ;
-                        if($block=~/"content".*?"(.*?)",/){$entry=$entry . "[content=$1]";}
+                        if($block=~/"content" . "(.*)",/){$entry=$entry . "[content=$1]";}
                         if($block=~/"status".*?"(.*?)"/){$entry=$entry . "[status=$1]";}
                         if($block=~/"reason".*?"(.*?)"/){$entry=$entry . "[reason=$1]";}
                         #if($block=~/"transaction_id".*?"(.*?)"/){$entry=$entry . "[trans_id=$1]";}
                         if($block=~/"media_id".*?"(.*?)"/){$entry=$entry . "[media_id=$1]";}
-                        if($block=~/".*?[audio|video]_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$1]";}
+                        if($block=~/".*?[audio|video|src]_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$1]";}
 						if($block=~/"digits".*?"(.*?)"/){$entry=$entry . "[digits=$1]";}
+                        if($block=~/"action".*?"(.*?)"/){$entry=$entry . "[action=$1]";}
+                        if($block=~/"alarm".*?"(.*?)"/){$entry=$entry . "[alarm=$1]";}
+                        if($block=~/"state".*?"(.*?)"/){$entry=$entry . "[state=$1]";}
+                        
                         $entry=$entry . "\n";
                         $sessionFlowList{$session}=$sessionFlowList{$session} . $entry;
                         $entry="";
@@ -128,6 +133,8 @@ foreach $file (@files) {
            $callids[$globalindex]= "$callid";
            $revcallids{$callid}=$globalindex;
            $lookingforsession=$globalindex;
+           $fileList{$callid}=$file;
+           ##increment global index on new calls
            $globalindex++;
            #Next line in log should be the Session::Session with the ID
         }
@@ -186,10 +193,12 @@ foreach $file (@files) {
    close (MYFILE);
 }
 
+
 my $index=1;
 while($index < $globalindex ){
      print "{\n";
      print "\"GlobalIndex\" : \"$index\",\n";
+     print "\"FileFirsFound\" : \"$fileList{$callids[$index]}\",\n";
      print "\"CallId\" : \"$callids[$index]\",\n";
      print "\"SessionId\" : \"$sessions[$index]\",\n";
      print "\"StreamId\" : \"$streams[$index]\",\n";
@@ -201,6 +210,7 @@ while($index < $globalindex ){
      
      print OUTFILE "{\n";
      print OUTFILE "\"GlobalIndex\" : \"$index\",\n";
+     print OUTFILE "\"FileFirsFound\" : \"$fileList{$callids[$index]}\",\n";
      print OUTFILE "\"CallId\" : \"$callids[$index]\",\n";
      print OUTFILE "\"SessionId\" : \"$sessions[$index]\",\n";
      print OUTFILE "\"StreamId\" : \"$streams[$index]\",\n";
@@ -212,28 +222,30 @@ while($index < $globalindex ){
      $index++;
 }
 
+print "\nLast Timestamp processed = $lastts\n";
+print OUTFILE "\nLast Timestamp processed = $lastts\n";
 #print active sessions
-print "Active Calls:\n";
-print OUTFILE "Active Calls:\n";
+print "\nActive Calls:\n";
+print OUTFILE "\nActive Calls:\n";
 foreach my $key (sort keys %activeCallList) {
     print $key." @ ".$activeCallList{$key}."\n";
     print OUTFILE $key." @ ".$activeCallList{$key}."\n";
   }
   
-print "Active Streams:\n";
-print OUTFILE "Active Streams:\n";
+print "\nActive Streams:\n";
+print OUTFILE "\nActive Streams:\n";
 foreach my $key (sort keys %activeStreamList) {
     print $key." @ ".$activeStreamList{$key}."\n";
     print OUTFILE $key." @ ".$activeStreamList{$key}."\n";
   }
-print "Active Media Sessions:\n";
-print OUTFILE "Active Media Sessions:\n";
+print "\nActive Media Sessions:\n";
+print OUTFILE "\nActive Media Sessions:\n";
 foreach my $key (sort keys %activeMediaList) {
     print $key." @ ".$activeMediaList{$key}."\n";
     print OUTFILE $key." @ ".$activeMediaList{$key}."\n";
   }
-print "Active Sessions:\n";
-print OUTFILE "Active Sessions:\n";
+print "\nActive Sessions:\n";
+print OUTFILE "\nActive Sessions:\n";
   foreach my $key (sort keys %activeSessionList) {
     print $key." @ ".$activeSessionList{$key}."\n";
     print OUTFILE $key." @ ".$activeSessionList{$key}."\n";
