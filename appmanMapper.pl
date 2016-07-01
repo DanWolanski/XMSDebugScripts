@@ -85,6 +85,10 @@ foreach $file (@files) {
                         if($block=~/"content".*?"(.*?)",/){$entry=$entry . "[content=$1]";}
                         if($block=~/"status".*?"(.*?)"/){$entry=$entry . "[status=$1]";}
                         if($block=~/"reason".*?"(.*?)"/){$entry=$entry . "[reason=$1]";}
+                        #if($block=~/"transaction_id".*?"(.*?)"/){$entry=$entry . "[trans_id=$1]";}
+                        if($block=~/"media_id".*?"(.*?)"/){$entry=$entry . "[media_id=$1]";}
+                        if($block=~/".*?[audio|video]_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$1]";}
+						if($block=~/"digits".*?"(.*?)"/){$entry=$entry . "[digits=$1]";}
                         $entry=$entry . "\n";
                         $sessionFlowList{$session}=$sessionFlowList{$session} . $entry;
                         $entry="";
