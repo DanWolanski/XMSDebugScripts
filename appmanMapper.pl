@@ -90,6 +90,8 @@ foreach $file (@files) {
                 if($block=~/"app_data".*?"target_id=(.*?);.*"/){
                         my $session=$1;
                         my $entry="$lastts";
+						if(($block=~/"transaction_id"/)&&($block!~/("ACK")/)) {$entry=$entry . " =>";}
+                        else {$entry=$entry . " <=";}
                         $block=~/"type".*?"(.*?)"/;
                         $entry=$entry . " $1 " ;
                         if($block=~/"ack".*?"(.*?)"/){$entry=$entry . "[ack=$1]";}
