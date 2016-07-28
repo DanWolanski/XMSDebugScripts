@@ -100,7 +100,8 @@ foreach $file (@files) {
                         if($block=~/"reason".*?"(.*?)"/){$entry=$entry . "[reason=$1]";}
                         #if($block=~/"transaction_id".*?"(.*?)"/){$entry=$entry . "[trans_id=$1]";}
                         if($block=~/"media_id".*?"(.*?)"/){$entry=$entry . "[media_id=$1]";}
-                        if($block=~/".*?[audio|video|src]_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$1]";}
+                        if($block=~/".*?(?:audio|video|src)_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$1]";}
+						if($block=~/"uri".*?"(.*?)"/){$entry=$entry . "[uri=$1]";}
 						if($block=~/"digits".*?"(.*?)"/){$entry=$entry . "[digits=$1]";}
                         if($block=~/"action".*?"(.*?)"/){$entry=$entry . "[action=$1]";}
                         if($block=~/"alarm".*?"(.*?)"/){$entry=$entry . "[alarm=$1]";}
@@ -125,7 +126,8 @@ foreach $file (@files) {
                         if($block=~/"reason".*?"(.*?)"/){$entry=$entry . "[reason=$1]";}
                         #if($block=~/"transaction_id".*?"(.*?)"/){$entry=$entry . "[trans_id=$1]";}
                         if($block=~/"media_id".*?"(.*?)"/){$entry=$entry . "[media_id=$1]";}
-                        if($block=~/".*?[audio|video|src]_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$1]";}
+                        if($block=~/".*?(?:audio|video|src)_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$1]";}
+						if($block=~/"uri".*?"(.*?)"/){$entry=$entry . "[uri=$1]";}
 						if($block=~/"digits".*?"(.*?)"/){$entry=$entry . "[digits=$1]";}
                         if($block=~/"action".*?"(.*?)"/){$entry=$entry . "[action=$1]";}
                         if($block=~/"alarm".*?"(.*?)"/){$entry=$entry . "[alarm=$1]";}
@@ -151,7 +153,8 @@ foreach $file (@files) {
                         
                         #if($block=~/"transaction_id".*?"(.*?)"/){$entry=$entry . "[trans_id=$1]";}
                         if($block=~/"media_id".*?"(.*?)"/){$entry=$entry . "[media_id=$1]";}
-                        if($block=~/".*?[audio|video|src]_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$1]";}
+                        if($block=~/".*?(?:audio|video|src)_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$1]";}
+						if($block=~/"uri".*?"(.*?)"/){$entry=$entry . "[uri=$1]";}
 						if($block=~/"digits".*?"(.*?)"/){$entry=$entry . "[digits=$1]";}
                         if($block=~/"action".*?"(.*?)"/){$entry=$entry . "[action=$1]";}
                         if($block=~/"alarm".*?"(.*?)"/){$entry=$entry . "[alarm=$1]";}
@@ -177,7 +180,8 @@ foreach $file (@files) {
                         
                         #if($block=~/"transaction_id".*?"(.*?)"/){$entry=$entry . "[trans_id=$1]";}
                         if($block=~/"media_id".*?"(.*?)"/){$entry=$entry . "[media_id=$1]";}
-                        if($block=~/".*?[audio|video|src]_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$1]";}
+                        if($block=~/".*?(?:audio|video|src)_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$1]";}
+						if($block=~/"uri".*?"(.*?)"/){$entry=$entry . "[uri=$1]";}
 						if($block=~/"digits".*?"(.*?)"/){$entry=$entry . "[digits=$1]";}
                         if($block=~/"action".*?"(.*?)"/){$entry=$entry . "[action=$1]";}
                         if($block=~/"alarm".*?"(.*?)"/){$entry=$entry . "[alarm=$1]";}
@@ -206,7 +210,8 @@ foreach $file (@files) {
                         
                         #if($block=~/"transaction_id".*?"(.*?)"/){$entry=$entry . "[trans_id=$1]";}
                         if($block=~/"media_id".*?"(.*?)"/){$entry=$entry . "[media_id=$1]";}
-                        if($block=~/".*?[audio|video|src]_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$1]";}
+                        if($block=~/".*?(?:audio|video|src)_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$1]";}
+						if($block=~/"uri".*?"(.*?)"/){$entry=$entry . "[uri=$1]";}
 						if($block=~/"digits".*?"(.*?)"/){$entry=$entry . "[digits=$1]";}
                         if($block=~/"action".*?"(.*?)"/){$entry=$entry . "[action=$1]";}
                         if($block=~/"alarm".*?"(.*?)"/){$entry=$entry . "[alarm=$1]";}
