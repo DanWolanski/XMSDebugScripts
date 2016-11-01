@@ -107,16 +107,12 @@ foreach $file (@files) {
                         if($block=~/"content" . "(.*)",/){$entry=$entry . "[content=$1]";}
                         if($block=~/"status".*?"(.*?)"/){$entry=$entry . "[status=$1]";}
                         if($block=~/"reason".*?"(.*?)"/){$entry=$entry . "[reason=$1]";}
+						if($block=~/"called_uri".*?"(.*?)"/){$entry=$entry . "[called_uri=$1]";}
+						if($block=~/"caller_uri".*?"(.*?)"/){$entry=$entry . "[caller_uri=$1]";}
                         #if($block=~/"transaction_id".*?"(.*?)"/){$entry=$entry . "[trans_id=$1]";}
                         if($block=~/"media_id".*?"(.*?)"/){$entry=$entry . "[media_id=$1]";}
-<<<<<<< HEAD
-                        if($block=~/".*?[audio|video|src]_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$1]";}
+                        if($block=~/".*?(audio|video|src)_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$2]";}
 						            if($block=~/"digits".*?"(.*?)"/){$entry=$entry . "[digits=$1]";}
-=======
-                        if($block=~/".*?(?:audio|video|src)_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$1]";}
-						if($block=~/"uri".*?"(.*?)"/){$entry=$entry . "[uri=$1]";}
-						if($block=~/"digits".*?"(.*?)"/){$entry=$entry . "[digits=$1]";}
->>>>>>> origin/master
                         if($block=~/"action".*?"(.*?)"/){$entry=$entry . "[action=$1]";}
                         if($block=~/"alarm".*?"(.*?)"/){$entry=$entry . "[alarm=$1]";}
                         if($block=~/"state".*?"(.*?)"/){$entry=$entry . "[state=$1]";}
@@ -139,16 +135,12 @@ foreach $file (@files) {
                         if($block=~/"content" . "(.*)",/){$entry=$entry . "[content=$1]";}
                         if($block=~/"status".*?"(.*?)"/){$entry=$entry . "[status=$1]";}
                         if($block=~/"reason".*?"(.*?)"/){$entry=$entry . "[reason=$1]";}
+						if($block=~/"called_uri".*?"(.*?)"/){$entry=$entry . "[called_uri=$1]";}
+						if($block=~/"caller_uri".*?"(.*?)"/){$entry=$entry . "[caller_uri=$1]";}
                         #if($block=~/"transaction_id".*?"(.*?)"/){$entry=$entry . "[trans_id=$1]";}
                         if($block=~/"media_id".*?"(.*?)"/){$entry=$entry . "[media_id=$1]";}
-<<<<<<< HEAD
-                        if($block=~/".*?[recording|audio|video|src]_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$1]";}
+                        if($block=~/".*?(recording|audio|video|src)_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$2]";}
 						            if($block=~/"digits".*?"(.*?)"/){$entry=$entry . "[digits=$1]";}
-=======
-                        if($block=~/".*?(?:audio|video|src)_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$1]";}
-						if($block=~/"uri".*?"(.*?)"/){$entry=$entry . "[uri=$1]";}
-						if($block=~/"digits".*?"(.*?)"/){$entry=$entry . "[digits=$1]";}
->>>>>>> origin/master
                         if($block=~/"action".*?"(.*?)"/){$entry=$entry . "[action=$1]";}
                         if($block=~/"alarm".*?"(.*?)"/){$entry=$entry . "[alarm=$1]";}
                         if($block=~/"state".*?"(.*?)"/){$entry=$entry . "[state=$1]";}
@@ -177,18 +169,13 @@ foreach $file (@files) {
                         if($block=~/"content" . "(.*)",/){$entry=$entry . "[content=$1]";}
                         if($block=~/"status".*?"(.*?)"/){$entry=$entry . "[status=$1]";}
                         if($block=~/"reason".*?"(.*?)"/){$entry=$entry . "[reason=$1]";}
-
+						if($block=~/"called_uri".*?"(.*?)"/){$entry=$entry . "[called_uri=$1]";}
+						if($block=~/"caller_uri".*?"(.*?)"/){$entry=$entry . "[caller_uri=$1]";}
                         #if($block=~/"transaction_id".*?"(.*?)"/){$entry=$entry . "[trans_id=$1]";}
                         if($block=~/"media_id".*?"(.*?)"/){$entry=$entry . "[media_id=$1]";}
-<<<<<<< HEAD
                         if($block=~/"uri".*?"(.*?)"/){$entry=$entry . "[uri=$1]";}
-                        if($block=~/".*?[recording|audio|video|src]_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$1]";}
+                        if($block=~/".*?(recording|audio|video|src)_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$2]";}
 						            if($block=~/"digits".*?"(.*?)"/){$entry=$entry . "[digits=$1]";}
-=======
-                        if($block=~/".*?(?:audio|video|src)_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$1]";}
-						if($block=~/"uri".*?"(.*?)"/){$entry=$entry . "[uri=$1]";}
-						if($block=~/"digits".*?"(.*?)"/){$entry=$entry . "[digits=$1]";}
->>>>>>> origin/master
                         if($block=~/"action".*?"(.*?)"/){$entry=$entry . "[action=$1]";}
                         if($block=~/"alarm".*?"(.*?)"/){$entry=$entry . "[alarm=$1]";}
                         if($block=~/"state".*?"(.*?)"/){$entry=$entry . "[state=$1]";}
@@ -224,8 +211,7 @@ foreach $file (@files) {
 
                         #if($block=~/"transaction_id".*?"(.*?)"/){$entry=$entry . "[trans_id=$1]";}
                         if($block=~/"media_id".*?"(.*?)"/){$entry=$entry . "[media_id=$1]";}
-                        if($block=~/".*?(?:audio|video|src)_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$1]";}
-						if($block=~/"uri".*?"(.*?)"/){$entry=$entry . "[uri=$1]";}
+                        if($block=~/".*?(audio|video|src)_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$2]";}
 						if($block=~/"digits".*?"(.*?)"/){$entry=$entry . "[digits=$1]";}
                         if($block=~/"action".*?"(.*?)"/){$entry=$entry . "[action=$1]";}
                         if($block=~/"alarm".*?"(.*?)"/){$entry=$entry . "[alarm=$1]";}
@@ -266,14 +252,8 @@ foreach $file (@files) {
 
                         #if($block=~/"transaction_id".*?"(.*?)"/){$entry=$entry . "[trans_id=$1]";}
                         if($block=~/"media_id".*?"(.*?)"/){$entry=$entry . "[media_id=$1]";}
-<<<<<<< HEAD
-                        if($block=~/".*?[audio|video|src]_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$1]";}
+                        if($block=~/".*?(audio|video|src)_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$2]";}
 						            if($block=~/"digits".*?"(.*?)"/){$entry=$entry . "[digits=$1]";}
-=======
-                        if($block=~/".*?(?:audio|video|src)_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$1]";}
-						if($block=~/"uri".*?"(.*?)"/){$entry=$entry . "[uri=$1]";}
-						if($block=~/"digits".*?"(.*?)"/){$entry=$entry . "[digits=$1]";}
->>>>>>> origin/master
                         if($block=~/"action".*?"(.*?)"/){$entry=$entry . "[action=$1]";}
                         if($block=~/"alarm".*?"(.*?)"/){$entry=$entry . "[alarm=$1]";}
                         if($block=~/"state".*?"(.*?)"/){$entry=$entry . "[state=$1]";}
