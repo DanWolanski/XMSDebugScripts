@@ -3,22 +3,18 @@
 # from the various XMS logs
 # License information and the latest version of this script can be found at
 # https://github.com/Dialogic/UsefulScripts
-if [ -e "/etc/init.d/functions" ];
-then
-. /etc/init.d/functions
-else
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 OFFSET='\033[60G'
-echo_success(){
+
+echo_success() {
   echo -en \\033
-  echo -en "${OFFSET}${GREEN}[OK]${NC}";
+  echo -en "${OFFSET}[  ${GREEN}OK${NC}  ]";
 }
-echo_failure(){
-echo -en "${OFFSET}${RED}[FAIL]${NC}";
+echo_failure() {
+echo -en "${OFFSET}[${RED}FAILED${NC}]";
 }
-fi
 
 LOGDIR="."
 starttime=`date +"%Y-%m-%d_%H-%M-%S"`
@@ -42,6 +38,10 @@ setfail() {
     echo -n "$@"
     STEP_OK=1
 }
+
+echo
+
+REPLACETXT="X-X"
 #####################
 # appmanager lines  #
 #####################
@@ -58,9 +58,10 @@ step "Scrubbing Appmanager Logs"
 #	"interval" : "100",
 #	"level" : "-10"
 #}
-sed -i  '
+sed -i -r '
 s/digits: \".*\"/digits: \"XX\"/g;
-s/\"digits\" : \".*\"/\"digits\" : \"XX\"/g
+s/\"digits\" : \".*\"/\"digits\" : \"XXX\"/g;
+s/\"(.*)_uri\" : \".*\"/\"\1_uri\" : \"XXX\"/g
 ' $LOGDIR/appmanager-*
 
 next
@@ -79,9 +80,10 @@ step "Scrubbing Broker Logs"
 #	"Interval" : "100",
 #	"Level" : "-10"
 #}
-
-sed -i  '
-s/\"Digits\" : \".*\"/\"Digits\" : \"XX\"/g
+#Audio-Uri
+sed -i -r '
+s/\"Digits\" : \".*\"/\"Digits\" : \"XXX\"/g;
+s/\"(.*-[U|u]ri)\" : \".*\"/\"\1\" : \"XXX\"/g
 ' $LOGDIR/broker-*
 
 next
@@ -92,9 +94,11 @@ next
 step "Scrubbing XMServer Logs"
 #2017-02-22 13:39:44.390539 DEBUG  sid:3a5cc3b0b2eb404fadd1e17ed1190f56 IpmDevice::onTelephonyEvent() TelephonyEventID: 0x1 600ms
 #2017-02-22 13:39:44.390582 DEBUG  sid:3a5cc3b0b2eb404fadd1e17ed1190f56 MediaServer::sendDtmf() id: 0c111e65-9d14-4f2e-9b4d-766b9d185aa9, digits: "1" 600
-sed -i  '
-s/digits: \".*\"/digits: \"XX\"/g;
-s/TelephonyEventID: .../TelephonyEventID: 0xXX /g
+#HttpPlayer::init() device: mmB1C3, audio: "http://logisticare-ivr-qa.stag.paas.voxgen.com:80/sw/externalAudio?content=wav&type=audio&url=file%3A%2F%2F%2Fhome%2Fstackato%2Fapp%2Faudios%2FEN%2Fgreet_9122354324.wav", video: ""
+sed -i  -r '
+s/digits: \".*\"/digits: \"XXX\"/g;
+s/TelephonyEventID: .../TelephonyEventID: 0xXXX /g;
+s/url=.*(["|&|$|\n|\r])/url=XX-SNIP-XX\1/g;
 ' $LOGDIR/xmserver-*
 
 next
@@ -134,18 +138,30 @@ step "Scrubbing VXML Logs"
 #lastresult$[0].inputmode = 'dtmf';
 #lastresult$[0].interpretation = '3';
 #lastresult$[0].bargeintime = 35173; 
-sed -i '
-s/digits : .*/digits : XX/g;
-s/ Got DTMF-.*,/ Got DTMF-XX,/g;
-s/ProcessDTMF(.*)/ProcessDTMF(XX)/g;
-s/Recognizing against buffer.*/Recognizing against buffer XX/g;
-s/Utterance: .[0-9|a-e]*.;/Utterance: XX/g;
-s/utterance = .[0-9|a-e]*.;/utterance = XX/g;
-s/Interpretation: .[0-9|a-e]*.;/Interpretation: XX/g;
-s/interpretation = .[0-9|a-e]*.;/interpretation = XX/g
+sed -i -r '
+s/digits : .*/digits : XXX/g;
+s/ Got DTMF-.*,/ Got DTMF-XXX,/g;
+s/ProcessDTMF(.*)/ProcessDTMF(XXX)/g;
+s/Recognizing against buffer.*/Recognizing against buffer XXX/g;
+s/Utterance: .[0-9|a-e]*.;/Utterance: \"XXX\"/g;
+s/utterance = .[0-9|a-e]*.;/utterance = XXX/g;
+s/[I|i]nterpretation: .[0-9|a-e]*.;/Interpretation: XXX/g;
+s/(utterance[:.*|\":\"])[0-9|a-e]*.,/\1XXX"/g;
+s/interpretation = .[0-9|a-e]*.;/interpretation = XXX/g;
+s/(interpretation:).*,/\1XX-SNIP-XX,/g;
+s/(\"interpretation\":).*,/\1XX-SNIP-XX,/g;
+s/(\"utterance\":).*,/\1XX-SNIP-XX,/g;
+s/(utterance: .)[0-9|a-e]*.,/\1XX-SNIP-XX\",/g;
+s/assigned value: .*/assigned value: XXX/g;
+s/Value of (.*) is : .*/Value of \1 is XXX/g;
+s/url=.*(["|&|$|\n|\r])/url=XX-SNIP-XX\1/g;
+s/note: [0-9|a-e]* is embedded in the value string/note: XX-SNIP-XX is embedded in the value string/g;
+s/Added param (.*) with value .*[\n|\r|\$]/Added param \1 with value XX-SNIP-XX/g;
 ' $LOGDIR/vxml*.log
 
 next
 echo 
 echo "Process Complete"
 echo 
+
+
