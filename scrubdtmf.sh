@@ -98,7 +98,9 @@ step "Scrubbing XMServer Logs"
 sed -i  -r '
 s/digits: \".*\"/digits: \"XXX\"/g;
 s/TelephonyEventID: .../TelephonyEventID: 0xXXX /g;
-s/url=.*(["|&|$|\n|\r])/url=XX-SNIP-XX\1/g;
+s/url=.*(\.pcm|\.wav)(["|&|$|\n|\r])/url=XX-SNIP-XX\1\2/g;
+s/url: .*(\.pcm|\.wav)(["|&|$|\n|\r])/url:XX-SNIP-XX\1\2/g;
+s/\[.*(\.wav|\.pcm)\]/\[XX-SNIP-XX\1\]/g;
 ' $LOGDIR/xmserver-*
 
 next
@@ -153,10 +155,13 @@ s/(\"interpretation\":).*,/\1XX-SNIP-XX,/g;
 s/(\"utterance\":).*,/\1XX-SNIP-XX,/g;
 s/(utterance: .)[0-9|a-e]*.,/\1XX-SNIP-XX\",/g;
 s/assigned value: .*/assigned value: XXX/g;
-s/Value of (.*) is : .*/Value of \1 is XXX/g;
-s/url=.*(["|&|$|\n|\r])/url=XX-SNIP-XX\1/g;
+s/Value of (.*?) is : .*/Value of \1 is XXX/g;
+s/url=(.*?)(\.pcm|\.wav|"|&|$|\n|\r)/url=XX-SNIP-XX\2/g;
+s/url:(.*?)(\.pcm|\.wav|"|&|$|\n|\r)/url: XX-SNIP-XX\2/g;
 s/note: [0-9|a-e]* is embedded in the value string/note: XX-SNIP-XX is embedded in the value string/g;
 s/Added param (.*) with value .*[\n|\r|\$]/Added param \1 with value XX-SNIP-XX/g;
+s/\[.*(\.wav|\.pcm)\]/\[XX-SNIP-XX\1\]/g;
+s/\[(utterance.*|values.*)\(.*\)\]/\[\1\(XX-SNIP-XX\)\]/g;
 ' $LOGDIR/vxml*.log
 
 next
