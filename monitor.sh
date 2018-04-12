@@ -120,6 +120,7 @@ do
        
         echo -e  "\n$looptimestamp-$hostname\n" >> topthreads-output.txt
         top -b -n 1 -H >> topthreads-output.txt
+        pmap -XX `pidof vxmlinterpreter`  >> vxml-pmap.txt
 	
         
         ## additional activites or spy can be done here such as watching messagefile or netcap for 15 seconds or looking for errors to print
