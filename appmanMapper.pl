@@ -141,6 +141,7 @@ foreach $file (@files) {
 						if(($block=~/"transaction_id"/)&&($block!~/("ACK")/)) {$entry=$entry . " =>";}
                         else {$entry=$entry . " <=";}
                         $block=~/"type".*?"(.*?)"/;
+						$entry=$entry . " <=";
                         $entry=$entry . " $1 " ;
                         if($block=~/"ack".*?"(.*?)"/){$entry=$entry . "[ack=$1]";}
                         if($block=~/"content" . "(.*)",/){$entry=$entry . "[content=$1]";}
