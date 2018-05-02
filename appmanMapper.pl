@@ -592,6 +592,7 @@ foreach my $key (sort keys %activeConfList) {
     print "    ";
     print $key." @ ".$activeConfList{$key}."\n";
     print OUTFILE $key." @ ".$activeConfList{$key}."\n";
+	
   }
 }else {
     print "    No Active Conferences Detected!\n";
@@ -649,6 +650,19 @@ print OUTFILE "\nActive Sessions:\n";
     print "    No Active Sessions Detected!\n";
     print OUTFILE "No Active Sessions Detected!\n";
 }
+
+if( keys %activeSessionList) {
+print "\nActive sid:\n";
+print OUTFILE "\nActive sid:\n";
+  foreach my $key (sort keys %activeSessionList) {
+    print "    ";
+    print "sid:".$key." @ ".$activeSessionList{$key}."\n";
+    print OUTFILE "sid:".$key." @ ".$activeSessionList{$key}."\n";
+  }
+}else {
+    print "    No Active sid Detected!\n";
+    print OUTFILE "No Active sid Detected!\n";
+}  
  close (OUTFILE);
  print "\n\n-------------------------------------------------------------------\n";
  print "\n All flows and Active sessions can be viewed in AppmanMapper.out\n";
