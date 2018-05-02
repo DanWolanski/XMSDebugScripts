@@ -140,7 +140,7 @@ foreach $file (@files) {
                         #if($block=~/"transaction_id".*?"(.*?)"/){$entry=$entry . "[trans_id=$1]";}
                         if($block=~/"media_id".*?"(.*?)"/){$entry=$entry . "[media_id=$1]";}
                         if($block=~/".*?(recording|audio|video|src)_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$2]";}
-						            if($block=~/"digits".*?"(.*?)"/){$entry=$entry . "[digits=$1]";}
+						if($block=~/"digits".*?"(.*?)"/){$entry=$entry . "[digits=$1]";}
                         if($block=~/"action".*?"(.*?)"/){$entry=$entry . "[action=$1]";}
                         if($block=~/"alarm".*?"(.*?)"/){$entry=$entry . "[alarm=$1]";}
                         if($block=~/"state".*?"(.*?)"/){$entry=$entry . "[state=$1]";}
@@ -175,7 +175,7 @@ foreach $file (@files) {
                         if($block=~/"media_id".*?"(.*?)"/){$entry=$entry . "[media_id=$1]";}
                         if($block=~/"uri".*?"(.*?)"/){$entry=$entry . "[uri=$1]";}
                         if($block=~/".*?(recording|audio|video|src)_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$2]";}
-						            if($block=~/"digits".*?"(.*?)"/){$entry=$entry . "[digits=$1]";}
+						if($block=~/"digits".*?"(.*?)"/){$entry=$entry . "[digits=$1]";}
                         if($block=~/"action".*?"(.*?)"/){$entry=$entry . "[action=$1]";}
                         if($block=~/"alarm".*?"(.*?)"/){$entry=$entry . "[alarm=$1]";}
                         if($block=~/"state".*?"(.*?)"/){$entry=$entry . "[state=$1]";}
@@ -314,24 +314,32 @@ foreach $file (@files) {
         #are we looking for session
             if(/$timestampformat.*sid.(.*) AppManager..onApiCreateCall.. session_id. (.*)/){
                 my $sid=$2;
-                my $session=$3;
+                my $sessionid=$3;
 
-                $sidmap{$sid}=$session;
-                $revsidmap{$session} = $sid;
+                $sidmap{$sid}=$sessionid;
+                $revsidmap{$sessionid} = $sid;
+			
+		   
+			  $sessionFlowList{$sessionid}=$sessionFlowList{$sessionid} . $createcallentry;
+			  $createcallentry="";
+			  #in 3pcc and outbound it uses the StreamId as the callID
+			  my $callid = $sessionid;
+			  #print "callids[$globalindex]=$callid \n";
+			  $callids[$globalindex]= "$callid";
+			  $revcallids{$callid}=$globalindex;
+			  $fileList{$callid}=$file;
+
+			  $sessions[$globalindex]=$sessionid;
+			  #print "sessions[$lookingforsession]=$sessionid \n";
+			  $revsessions{$sessionid}=$globalindex;
+			  $lookingforstream=$globalindex;
+			  #putting this here for now, as may be outbound call, if we get to stream without all then is 3pcc
+			  $lookingforcall=$globalindex;
+			  ##increment global index on new calls
+			  $globalindex++;
+
             }
-
-            if(/$timestampformat.*Session..Session.. id. (.*)/){
-              my $sessionid = $2;
-
-              if($lookingforsession > 0){
-
-                    $sessions[$lookingforsession]=$sessionid;
-                    #print "sessions[$lookingforsession]=$sessionid \n";
-                    $revsessions{$sessionid}=$lookingforsession;
-                    $lookingforsession=0;
-                    }
-                  }
-            if(/$timestampformat.*AppManager::onApiCreateCall.. session_id: (.*)/){
+			elsif(/$timestampformat.*AppManager::onApiCreateCall.. session_id: (.*)/){
                       my $sessionid = $2;
                       $sessionFlowList{$sessionid}=$sessionFlowList{$sessionid} . $createcallentry;
                       $createcallentry="";
@@ -354,6 +362,34 @@ foreach $file (@files) {
 
               }
 
+			if(/$timestampformat.*sid.(.*) Session..Session.. id. (.*)/){
+			    my $sid=$2;
+                my $sessionid=$3;
+
+                $sidmap{$sid}=$sessionid;
+                $revsidmap{$sessionid} = $sid;
+			
+            
+              if($lookingforsession > 0){
+
+                    $sessions[$lookingforsession]=$sessionid;
+                    #print "sessions[$lookingforsession]=$sessionid \n";
+                    $revsessions{$sessionid}=$lookingforsession;
+                    $lookingforsession=0;
+                    }
+                  }
+            elsif(/$timestampformat.*Session..Session.. id. (.*)/){
+              my $sessionid = $2;
+
+              if($lookingforsession > 0){
+
+                    $sessions[$lookingforsession]=$sessionid;
+                    #print "sessions[$lookingforsession]=$sessionid \n";
+                    $revsessions{$sessionid}=$lookingforsession;
+                    $lookingforsession=0;
+                    }
+                  }
+            
             if(/$timestampformat.*ResourceManager..createStreamResource.. id. (.*)/){
                 if($lookingforstream > 0){
                     my $streamid = $2;
