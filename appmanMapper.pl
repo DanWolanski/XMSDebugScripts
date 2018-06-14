@@ -69,6 +69,16 @@ foreach $file (@files) {
                     $totags[$index]=$totag;
                     #print "totags[$index]=$totag (session=$session)\n";
                 }
+				if($block=~/"type" . "OFFER"/){
+                    #OFFER BLOCK
+                    $block=~/"call_id" . "(.*)"/;
+                    my $session=$1;
+                    $block=~/"called_uri" . ".*;tag=(.*)",/;
+                    $block=~/"gusid" . "(.*)"/;
+					$gusid = $1;
+					$sidmap{$gusid} = $session;
+					$revsidmap{$session} = $gusid;
+                }
                 #check if block had media_id
                 elsif($block=~/"media_id" . "(.*)"/){
                     my $mediaid=$1;
@@ -128,7 +138,8 @@ foreach $file (@files) {
                 } elsif($block=~/"call_id" : "(.*?)"/){
                         my $session=$1;
                         my $entry="$lastts";
-
+						if(($block=~/"transaction_id"/)&&($block!~/("ACK")/)) {$entry=$entry . " =>";}
+                        else {$entry=$entry . " <=";}
                         $block=~/"type".*?"(.*?)"/;
                         $entry=$entry . " $1 " ;
                         if($block=~/"ack".*?"(.*?)"/){$entry=$entry . "[ack=$1]";}
@@ -149,7 +160,11 @@ foreach $file (@files) {
                         if($block=~/"video".*?"(.*?)"/){$entry=$entry . "[video=$1]";}
                         if($block=~/"region".*?"(.*?)"/){$entry=$entry . "[region=$1]";}
                         if($block=~/"media".*?"(.*?)"/){$entry=$entry . "[media=$1]";}
-
+						if($block=~/"call_id2".*?"(.*?)"/){$entry=$entry . "[call_id2=$1]";}
+						if($block=~/"async_dtmf".*?"(.*?)"/){$entry=$entry . "[async_dtmf=$1]";}
+						if($block=~/"async_tone".*?"(.*?)"/){$entry=$entry . "[async_tone=$1]";}
+						if($block=~/"cpa".*?"(.*?)"/){$entry=$entry . "[cpa=$1]";}
+						if($block=~/"transaction_id".*?"(.*?)"/){$entry=$entry . "[transaction_id=$1]";}
                         if($block=~/"mline".*?"(.*?)"/){$entry=$entry . "[mline=$1]";}
                         if($block=~/"mid".*?"(.*?)"/){$entry=$entry . "[mid=$1]";}
                         if($block=~/"candidate".*?"(.*?)"/){$entry=$entry . "[candidate=$1]";}
@@ -158,7 +173,48 @@ foreach $file (@files) {
                         $sessionFlowList{$session}=$sessionFlowList{$session} . $entry;
                         $entry="";
                 #this is for REST or Common API
-                } elsif($block=~/"id" : "(.*?)"/){
+                } elsif($block=~/"app_data" : "(.*?)"/){
+                        my $session=$1;
+                        my $entry="$lastts";
+                        if(($block=~/"transaction_id"/)&&($block!~/("ACK")/)) {$entry=$entry . " =>";}
+                        else {$entry=$entry . " <=";}
+                        $block=~/"type".*?"(.*?)"/;
+                        $entry=$entry . " $1 " ;
+                        if($block=~/"ack".*?"(.*?)"/){$entry=$entry . "[ack=$1]";}
+                        if($block=~/"content" . "(.*)",/){$entry=$entry . "[content=$1]";}
+                        if($block=~/"status".*?"(.*?)"/){$entry=$entry . "[status=$1]";}
+                        if($block=~/"reason".*?"(.*?)"/){$entry=$entry . "[reason=$1]";}
+						if($block=~/"called_uri".*?"(.*?)"/){$entry=$entry . "[called_uri=$1]";}
+						if($block=~/"caller_uri".*?"(.*?)"/){$entry=$entry . "[caller_uri=$1]";}
+                        #if($block=~/"transaction_id".*?"(.*?)"/){$entry=$entry . "[trans_id=$1]";}
+                        if($block=~/"media_id".*?"(.*?)"/){$entry=$entry . "[media_id=$1]";}
+                        if($block=~/"uri".*?"(.*?)"/){$entry=$entry . "[uri=$1]";}
+                        if($block=~/".*?(recording|audio|video|src)_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$2]";}
+						if($block=~/"digits".*?"(.*?)"/){$entry=$entry . "[digits=$1]";}
+                        if($block=~/"action".*?"(.*?)"/){$entry=$entry . "[action=$1]";}
+                        if($block=~/"alarm".*?"(.*?)"/){$entry=$entry . "[alarm=$1]";}
+                        if($block=~/"state".*?"(.*?)"/){$entry=$entry . "[state=$1]";}
+                        if($block=~/"conf_id".*?"(.*?)"/){$entry=$entry . "[conf_id=$1]";}
+                        if($block=~/"call_id".*?"(.*?)"/){$entry=$entry . "[call_id=$1]";}
+                        if($block=~/"audio".*?"(.*?)"/){$entry=$entry . "[audio=$1]";}
+                        if($block=~/"video".*?"(.*?)"/){$entry=$entry . "[video=$1]";}
+                        if($block=~/"region".*?"(.*?)"/){$entry=$entry . "[region=$1]";}
+                        if($block=~/"term_digits".*?"(.*?)"/){$entry=$entry . "[term_digits=$1]";}
+                        if($block=~/"beep".*?"(.*?)"/){$entry=$entry . "[beep=$1]";}
+                        if($block=~/"caption".*?"(.*?)"/){$entry=$entry . "[caption=$1]";}
+                        if($block=~/"mute".*?"(.*?)"/){$entry=$entry . "[mute=$1]";}
+                        if($block=~/"tx_mute".*?"(.*?)"/){$entry=$entry . "[tx_mute=$1]";}
+                        if($block=~/"privilege".*?"(.*?)"/){$entry=$entry . "[privilege=$1]";}
+                        if($block=~/"mode".*?"(.*?)"/){$entry=$entry . "[mode=$1]";}
+
+
+
+
+                        $entry=$entry . "\n";
+                        $sessionFlowList{$session}=$sessionFlowList{$session} . $entry;
+                        $entry="";
+                
+                }elsif($block=~/"id" : "(.*?)"/){
                         my $session=$1;
                         my $entry="$lastts";
                         if(($block=~/"transaction_id"/)&&($block!~/("ACK")/)) {$entry=$entry . " =>";}
@@ -202,13 +258,15 @@ foreach $file (@files) {
                 } elsif($block=~/"media_id" : "(.*?)"/){
                         $session = $mediamap[$1];
                         my $entry="$lastts";
+						if(($block=~/"transaction_id"/)&&($block!~/("ACK")/)) {$entry=$entry . " =>";}
+                        else {$entry=$entry . " <=";}
                         $block=~/"type".*?"(.*?)"/;
                         $entry=$entry . " $1 " ;
                         if($block=~/"ack".*?"(.*?)"/){$entry=$entry . "[ack=$1]";}
                         if($block=~/"content" . "(.*)",/){$entry=$entry . "[content=$1]";}
                         if($block=~/"status".*?"(.*?)"/){$entry=$entry . "[status=$1]";}
                         if($block=~/"reason".*?"(.*?)"/){$entry=$entry . "[reason=$1]";}
-
+						
                         #if($block=~/"transaction_id".*?"(.*?)"/){$entry=$entry . "[trans_id=$1]";}
                         if($block=~/"media_id".*?"(.*?)"/){$entry=$entry . "[media_id=$1]";}
                         if($block=~/".*?(audio|video|src)_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$2]";}
@@ -227,6 +285,8 @@ foreach $file (@files) {
 
                 }elsif ($block=~/"type" : "CREATE_CALL"/){
                         my $entry="$lastts";
+						if(($block=~/"transaction_id"/)&&($block!~/("ACK")/)) {$entry=$entry . " =>";}
+                        else {$entry=$entry . " <=";}
                         $block=~/"type".*?"(.*?)"/;
                         $entry=$entry . " $1 " ;
                         if($block=~/"ice".*?"(.*?)"/){$entry=$entry . "[ice=$1]";}
@@ -238,11 +298,49 @@ foreach $file (@files) {
                         #printf "Saving create conf for next block - $createconfentry \n";
                         $createcallentry = $entry;
                 }
+				# Check for the SID
+				elsif($block=~/ sid:(.*) AppManager::sendToApi/){
+				   my $sid = $1;
+				   
+				   my $entry="$lastts";
+				   if(($block=~/"transaction_id"/)&&($block!~/("ACK")/)) {$entry=$entry . " =>";}
+                   else {$entry=$entry . " <=";}
+				   $session =$sidmap{$sid};
+				   $block=~/"type".*?"(.*?)"/;
+                        my $entry=$entry . " $1 " ;
+                        if($block=~/"ack".*?"(.*?)"/){$entry=$entry . "[ack=$1]";}
+                        if($block=~/"content" . "(.*)",/){$entry=$entry . "[content=$1]";}
+                        if($block=~/"status".*?"(.*?)"/){$entry=$entry . "[status=$1]";}
+                        if($block=~/"reason".*?"(.*?)"/){$entry=$entry . "[reason=$1]";}
+
+                        #if($block=~/"transaction_id".*?"(.*?)"/){$entry=$entry . "[trans_id=$1]";}
+                        if($block=~/"media_id".*?"(.*?)"/){$entry=$entry . "[media_id=$1]";}
+                        if($block=~/".*?(audio|video|src)_uri".*?"(.*?)"/){$entry=$entry . "[file_uri=$2]";}
+						if($block=~/"digits".*?"(.*?)"/){$entry=$entry . "[digits=$1]";}
+                        if($block=~/"action".*?"(.*?)"/){$entry=$entry . "[action=$1]";}
+                        if($block=~/"alarm".*?"(.*?)"/){$entry=$entry . "[alarm=$1]";}
+                        if($block=~/"state".*?"(.*?)"/){$entry=$entry . "[state=$1]";}
+                        if($block=~/"audio".*?"(.*?)"/){$entry=$entry . "[audio=$1]";}
+                        if($block=~/"video".*?"(.*?)"/){$entry=$entry . "[video=$1]";}
+                        if($block=~/"region".*?"(.*?)"/){$entry=$entry . "[region=$1]";}
+                        if($block=~/"call_id".*?"(.*?)"/){$entry=$entry . "[call_id=$1]";}
+						if($block=~/"call_id2".*?"(.*?)"/){$entry=$entry . "[call_id2=$1]";}
+                        if($block=~/"media".*?"(.*?)"/){$entry=$entry . "[media=$1]";}
+                        if($block=~/"layout".*?"(.*?)"/){$entry=$entry . "[layout=$1]";}
+                        if($block=~/"layout_size".*?"(.*?)"/){$entry=$entry . "[layout_size=$1]";}
+
+                        $entry=$entry . "\n";
+                        $sessionFlowList{$session}=$sessionFlowList{$session} . $entry;
+
+                        $entry="";
+				}
 
 
                 if($block=~/"conf_id" : "(.*?)"/){
                         $session = $1 ;
                         my $entry="$lastts";
+						if(($block=~/"transaction_id"/)&&($block!~/("ACK")/)) {$entry=$entry . " =>";}
+                        else {$entry=$entry . " <=";}
                         $block=~/"type".*?"(.*?)"/;
                         my $entry=$entry . " $1 " ;
                         if($block=~/"ack".*?"(.*?)"/){$entry=$entry . "[ack=$1]";}
@@ -273,6 +371,8 @@ foreach $file (@files) {
                 elsif ($block=~/"type" : "CREATE_CONF"/){
 
                         my $entry="$lastts";
+						if(($block=~/"transaction_id"/)&&($block!~/("ACK")/)) {$entry=$entry . " =>";}
+                        else {$entry=$entry . " <=";}
                         $block=~/"type".*?"(.*?)"/;
                         $entry=$entry . " $1 " ;
                         if($block=~/"media".*?"(.*?)"/){$entry=$entry . "[media=$1]";}
@@ -288,6 +388,8 @@ foreach $file (@files) {
                 elsif ($block=~/"type" : "REGISTER"/){
 
                         my $entry="$lastts";
+						if(($block=~/"transaction_id"/)&&($block!~/("ACK")/)) {$entry=$entry . " =>";}
+                        else {$entry=$entry . " <=";}
                         $block=~/"type".*?"(.*?)"/;
                         $entry=$entry . " $1 " ;
                         if($block=~/"name".*?"(.*?)"/){$entry=$entry . "[name=$1]";}
@@ -312,41 +414,33 @@ foreach $file (@files) {
             $inblock=true
         }
         #are we looking for session
-            if(/$timestampformat.*sid.(.*) AppManager..onApiCreateCall.. session_id. (.*)/){
+            if(/$timestampformat.*sid.(.*) AppManager..onApiCreateCall.. session_id. (.*)/ ){
                 my $sid=$2;
-                my $sessionid=$3;
+                my $session=$3;
 
-                $sidmap{$sid}=$sessionid;
-                $revsidmap{$sessionid} = $sid;
-			
-		   
-			  $sessionFlowList{$sessionid}=$sessionFlowList{$sessionid} . $createcallentry;
-			  $createcallentry="";
-			  #in 3pcc and outbound it uses the StreamId as the callID
-			  my $callid = $sessionid;
-			  #print "callids[$globalindex]=$callid \n";
-			  $callids[$globalindex]= "$callid";
-			  $revcallids{$callid}=$globalindex;
-			  $fileList{$callid}=$file;
-
-			  $sessions[$globalindex]=$sessionid;
-			  #print "sessions[$lookingforsession]=$sessionid \n";
-			  $revsessions{$sessionid}=$globalindex;
-			  $lookingforstream=$globalindex;
-			  #putting this here for now, as may be outbound call, if we get to stream without all then is 3pcc
-			  $lookingforcall=$globalindex;
-			  ##increment global index on new calls
-			  $globalindex++;
-
+                $sidmap{$sid}=$session;
+                $revsidmap{$session} = $sid;
             }
-			elsif(/$timestampformat.*AppManager::onApiCreateCall.. session_id: (.*)/){
+
+            if(/$timestampformat.*Session..Session.. id. (.*)/){
+              my $sessionid = $2;
+
+              if($lookingforsession > 0){
+
+                    $sessions[$lookingforsession]=$sessionid;
+                    #print "sessions[$lookingforsession]=$sessionid \n";
+                    $revsessions{$sessionid}=$lookingforsession;
+                    $lookingforsession=0;
+                    }
+                  }
+            if(/$timestampformat.*AppManager::onApiCreateCall.. session_id: (.*) /){
                       my $sessionid = $2;
                       $sessionFlowList{$sessionid}=$sessionFlowList{$sessionid} . $createcallentry;
                       $createcallentry="";
                       #in 3pcc and outbound it uses the StreamId as the callID
                       my $callid = $sessionid;
                       #print "callids[$globalindex]=$callid \n";
-                      $callids[$globalindex]= "$callid";
+                      $callids[$globalindex]= $callid;
                       $revcallids{$callid}=$globalindex;
                       $fileList{$callid}=$file;
 
@@ -361,35 +455,16 @@ foreach $file (@files) {
 
 
               }
-
-			if(/$timestampformat.*sid.(.*) Session..Session.. id. (.*)/){
-			    my $sid=$2;
-                my $sessionid=$3;
-
-                $sidmap{$sid}=$sessionid;
-                $revsidmap{$sessionid} = $sid;
-			
-            
-              if($lookingforsession > 0){
-
-                    $sessions[$lookingforsession]=$sessionid;
-                    #print "sessions[$lookingforsession]=$sessionid \n";
-                    $revsessions{$sessionid}=$lookingforsession;
-                    $lookingforsession=0;
-                    }
-                  }
-            elsif(/$timestampformat.*Session..Session.. id. (.*)/){
-              my $sessionid = $2;
-
-              if($lookingforsession > 0){
-
-                    $sessions[$lookingforsession]=$sessionid;
-                    #print "sessions[$lookingforsession]=$sessionid \n";
-                    $revsessions{$sessionid}=$lookingforsession;
-                    $lookingforsession=0;
-                    }
-                  }
-            
+			if(/$timestampformat.* ResourceManager::createCallResource.. id: (.*?)$/){
+				
+				#in this case another call was crated for the stream resource so the session is no longer the callid
+				my $callid = $2;
+				
+				if($lookingforcall > 0 ){
+					$callids[$lookingforcall]= $callid;
+					$lookingforcall=0;
+				 } #todo here grab it out based on the SID
+			}
             if(/$timestampformat.*ResourceManager..createStreamResource.. id. (.*)/){
                 if($lookingforstream > 0){
                     my $streamid = $2;
@@ -592,7 +667,6 @@ foreach my $key (sort keys %activeConfList) {
     print "    ";
     print $key." @ ".$activeConfList{$key}."\n";
     print OUTFILE $key." @ ".$activeConfList{$key}."\n";
-	
   }
 }else {
     print "    No Active Conferences Detected!\n";
@@ -650,19 +724,6 @@ print OUTFILE "\nActive Sessions:\n";
     print "    No Active Sessions Detected!\n";
     print OUTFILE "No Active Sessions Detected!\n";
 }
-
-if( keys %activeSessionList) {
-print "\nActive sid:\n";
-print OUTFILE "\nActive sid:\n";
-  foreach my $key (sort keys %activeSessionList) {
-    print "    ";
-    print "sid:".$key." @ ".$activeSessionList{$key}."\n";
-    print OUTFILE "sid:".$key." @ ".$activeSessionList{$key}."\n";
-  }
-}else {
-    print "    No Active sid Detected!\n";
-    print OUTFILE "No Active sid Detected!\n";
-}  
  close (OUTFILE);
  print "\n\n-------------------------------------------------------------------\n";
  print "\n All flows and Active sessions can be viewed in AppmanMapper.out\n";
