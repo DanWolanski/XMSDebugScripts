@@ -429,7 +429,7 @@ print OUTFILE "\n\n==================================\n";
 print OUTFILE "Call Flows (count=$detectedcount)\n";
 print OUTFILE "==================================\n";
 my $index=1;
-while($index < $detectedcount ){
+while($index <= $detectedcount ){
 
      print OUTFILE "{\n";
      print OUTFILE "\"GlobalIndex\" : \"$index\",\n";
