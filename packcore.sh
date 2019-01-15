@@ -99,7 +99,7 @@ esac
 next
 
 step "Gathering Command name from core"
-cmdname=$(file "$COREFILE" | sed -e"s/.*from '\(.*\)'/\1/")
+cmdname=$(file "$COREFILE" | grep -oP "(?<=from ')(.*?)(?=',)")
 next
 echo "     $cmdname"
 step "Converting command name to path"
