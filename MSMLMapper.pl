@@ -89,6 +89,9 @@ foreach $file (@files) {
 
    }
    close (MYFILE);
+  
+   
+   
 }
 
 print "   Parsing Complete!\n";
@@ -109,7 +112,7 @@ foreach my $session (@sessions){
      print OUTFILE "\"MediaSessionList\" : \n[\n$sessionmedialist{$session} \n] ,\n";
      print OUTFILE "\"CallStateList\" : \n[\n$callstatelist{$session} \n] ,\n";
      print OUTFILE "\"DialogList\" : \n[\n$dialoglist{$totags{$session}} \n],\n";
-     print OUTFILE "\"SessionFlowList\" : \n[\n$sessionFlowList{$session} \n] \n";
+     print OUTFILE "\"SessionFlowList\":\n[[[\n" . add_delta($sessionFlowList{$session}) . "]\n";
      print OUTFILE "}\n";
 }
 
@@ -127,6 +130,48 @@ sub format_block{
     $block =~ s/\\\"/\"/g;
 
     return $block
+}
+sub add_delta{
+    my ($block) = @_;
+    my @lines = split "\n", $block ;
+    my $newout = '';
+    my $lastts = '' ;
+    my $starttime = 0;
+    my $addon = '';
+    foreach ( @lines ){
+     if(/(\d{4}-\d{2}-(\d{2}) (\d{2}):(\d{2}):(\d{2})(\.\d{6}))/){
+        my $ts = $1;
+        my $day = $2;
+        my $hour = $3;
+        my $min = $4;
+        my $sec = $5;
+        my $mili = $6;
+       #printf("$1 $2 $3:$4:$5$6\n");
+       if(/INFO_ACK/){
+         if($starttime != 0){
+           my $endtime = ($hour * 3600) + ($min * 60 ) + $sec + ($mili);
+        #   printf("End time is $endtime\n");
+           if ($endtime < $starttime){
+             #Day rollover, addint 1 day of seconds
+             $endtime += 86400;
+           }
+           my $deltatime = $endtime - $starttime;
+           $starttime = 0;
+           $endtime = 0;
+           $addon = sprintf("[delta=%.6f]", $deltatime) ;
+          # printf("$addon\n");
+         }
+       }
+       elsif(/ INFO /){
+          $starttime = ($hour * 3600) + ($min * 60 ) + $sec + ($mili);
+         # printf("Start time is $starttime\n");
+          }
+         $newout =$newout . "$_".$addon."\n" ;
+         $addon = '';
+      }
+    }
+
+    return $newout
 }
 
 sub parseXMSEventCallbackBlock{
@@ -210,6 +255,8 @@ sub parseXMSEventCallbackBlock{
         $entry .="[$key=" . $parms{$key} . "]";
       }
     }
+    $entry =~ s/\n//g;
+    $entry =~ s/\r//g;
     $entry .= "\n";
     #printf "   $entry";
     $sessionFlowList{$session} .= $entry;
